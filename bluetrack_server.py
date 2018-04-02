@@ -25,6 +25,7 @@ class beacon(Location):
 import math
 import socket
 from cStringIO import StringIO
+import numpy as np
 
 HOST = ''
 PORT = 50009              # Arbitrary non-privileged port
@@ -120,6 +121,21 @@ while (1):
       d = 10**((int(rssi)-tx_power)/(-20.0))
       estimated_distance.append(d)
     print estimated_distance
+
+    vecB = []
+    matA = []
+    vecN = beacons_locations[-1]
+    rN = estimated_distance[-1]
+    for i in range(len(beacons_locations)-1):
+        loc = beacons_location[i]
+        matA.append([vecN[0] - loc[0], vecN[1] - loc[1]])
+        vecB.append((estimated_distance[i]**2 - rN**2) - (loc[0]**2 - vecN[0]**2) - (loc[1]**2 - vecN[1]**2))
+    matA = np.array(matA)
+    vecB = np.array(vecB)
+
+    result = 0.5*np.linalg.pinv(matA)*vecB
+
+    print result
 
     #now we filled the estimated distance d0-d5 from each beacon
     #compare with actual distance
