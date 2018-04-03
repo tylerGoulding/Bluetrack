@@ -129,7 +129,7 @@ while (1):
     for i in range(len(beacons_locations)-1):
         loc = beacons_location[i]
         matA.append([vecN[0] - loc[0], vecN[1] - loc[1]])
-        vecB.append((estimated_distance[i]**2 - rN**2) - (loc[0]**2 - vecN[0]**2) - (loc[1]**2 - vecN[1]**2))
+        vecB.append([(estimated_distance[i]**2 - rN**2) - (loc[0]**2 - vecN[0]**2) - (loc[1]**2 - vecN[1]**2)])
 
     NUM_DROP = 2 # number of data to drop
     drop_index = np.argsort()[-NUM_DROP:][::-1]
