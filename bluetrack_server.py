@@ -164,7 +164,7 @@ while (1):
         estimated_location = possible_locations[i]
         estimated_key = key;
 
-    print (time_stamp[position] + " " + str(estimated_location) +estimated_key)
+    print (time_stamp[position] + " " + str(estimated_location) + " " + estimated_key)
     path.append((time_stamp[position],estimated_location))
 
 print path
