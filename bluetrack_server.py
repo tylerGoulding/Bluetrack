@@ -133,11 +133,13 @@ while (1):
 
 
     NUM_DROP = 2 # number of data to drop
-    drop_index = np.argsort()[-NUM_DROP:][::-1]
-    print "drop: " + drop_index
+    drop_index = np.argsort(np.array(estimated_distance))[-NUM_DROP:][::-1]
+    print "drop: " + str(drop_index)
 
     assert(len(drop_index) == NUM_DROP)
     # Zero out the most unreliable data
+    print vecB
+    print matA
     for idx in drop_index:
         vecB[idx] = [0]
         matA[idx] = [0, 0]
@@ -146,7 +148,7 @@ while (1):
     vecB = np.array(vecB)
 
 
-    result = 0.5*np.linalg.pinv(matA)*vecB
+    result = 0.5*np.matmult(np.linalg.pinv(matA),vecB)
     print result
 
     #now we filled the estimated distance d0-d5 from each beacon
