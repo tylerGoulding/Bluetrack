@@ -130,12 +130,23 @@ while (1):
         loc = beacons_locations[i]
         matA.append([vecN[0] - loc[0], vecN[1] - loc[1]])
         vecB.append([(estimated_distance[i]**2 - rN**2) - (loc[0]**2 - vecN[0]**2) - (loc[1]**2 - vecN[1]**2)])
+
+
+    NUM_DROP = 2 # number of data to drop
+    drop_index = np.argsort()[-NUM_DROP:][::-1]
+    print "drop: " + drop_index
+
+    assert(len(drop_index) == NUM_DROP)
+    # Zero out the most unreliable data
+    for idx in drop_index:
+        vecB[idx] = [0]
+        matA[idx] = [0, 0]
+
     matA = np.array(matA)
     vecB = np.array(vecB)
 
-    result = 0.5* np.matmul(np.linalg.pinv(matA),vecB)
-    print matA
-    print vecB
+
+    result = 0.5*np.linalg.pinv(matA)*vecB
     print result
 
     #now we filled the estimated distance d0-d5 from each beacon
@@ -143,9 +154,11 @@ while (1):
     for i in xrange(M):
       mean_squared_error = 0
       key = "m" + str(i)
-
+      
+      max_distance = sorted(all_distances[key])[2];
       for j,distance in enumerate(all_distances[key]):
-        mean_squared_error += (estimated_distance[j] - distance)**2
+        if (distance <= max_distance):
+        	mean_squared_error += (estimated_distance[j] - distance)**2
       mean_squared_error /= float(N)
       print key + ": "+ str(mean_squared_error)
       if (mean_squared_error < min_error):
@@ -153,8 +166,9 @@ while (1):
         estimated_location = possible_locations[i]
         estimated_key = key;
 
-    print (time_stamp[position] + " " + str(estimated_location) +estimated_key)
+
     print ('Closest to: b' + str(estimated_distance.index(min(estimated_distance))))
+    print (time_stamp[position] + " " + str(estimated_location) + " " + estimated_key)
     path.append((time_stamp[position],estimated_location))
 
 print path
