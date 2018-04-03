@@ -127,14 +127,15 @@ while (1):
     vecN = beacons_locations[-1]
     rN = estimated_distance[-1]
     for i in range(len(beacons_locations)-1):
-        loc = beacons_location[i]
+        loc = beacons_locations[i]
         matA.append([vecN[0] - loc[0], vecN[1] - loc[1]])
-        vecB.append((estimated_distance[i]**2 - rN**2) - (loc[0]**2 - vecN[0]**2) - (loc[1]**2 - vecN[1]**2))
+        vecB.append([(estimated_distance[i]**2 - rN**2) - (loc[0]**2 - vecN[0]**2) - (loc[1]**2 - vecN[1]**2)])
     matA = np.array(matA)
     vecB = np.array(vecB)
 
-    result = 0.5*np.linalg.pinv(matA)*vecB
-
+    result = 0.5* np.matmul(np.linalg.pinv(matA),vecB)
+    print matA
+    print vecB
     print result
 
     #now we filled the estimated distance d0-d5 from each beacon
@@ -153,6 +154,7 @@ while (1):
         estimated_key = key;
 
     print (time_stamp[position] + " " + str(estimated_location) +estimated_key)
+    print ('Closest to: b' + str(estimated_distance.index(min(estimated_distance))))
     path.append((time_stamp[position],estimated_location))
 
 print path
