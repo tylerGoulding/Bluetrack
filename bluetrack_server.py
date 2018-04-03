@@ -143,8 +143,10 @@ while (1):
       mean_squared_error = 0
       key = "m" + str(i)
 
+	  max_distance = sorted(all_distances[key])[2];
       for j,distance in enumerate(all_distances[key]):
-        mean_squared_error += (estimated_distance[j] - distance)**2
+      	if (distance <= max_distance):
+        	mean_squared_error += (estimated_distance[j] - distance)**2
       mean_squared_error /= float(N)
       print key + ": "+ str(mean_squared_error)
       if (mean_squared_error < min_error):
