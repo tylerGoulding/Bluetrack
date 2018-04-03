@@ -124,29 +124,30 @@ while (1):
 
     vecB = []
     matA = []
-    vecN = beacons_locations[-1]
-    rN = estimated_distance[-1]
-    for i in range(len(beacons_locations)-1):
-        loc = beacons_locations[i]
-        matA.append([vecN[0] - loc[0], vecN[1] - loc[1]])
-        vecB.append([(estimated_distance[i]**2 - rN**2) - (loc[0]**2 - vecN[0]**2) - (loc[1]**2 - vecN[1]**2)])
 
+    nearestBeaconIdx = np.array(estimated_distance).argsort()[0]
+    print "nearest beacon: " + str(nearestBeaconIdx)
+    vecN = beacons_locations[nearestBeaconIdx]
+    rN = estimated_distance[nearestBeaconIdx]
 
     NUM_DROP = 2 # number of data to drop
     drop_index = np.argsort(np.array(estimated_distance))[-NUM_DROP:][::-1]
+    assert(len(drop_index) == NUM_DROP)
     print "drop: " + str(drop_index)
 
-    assert(len(drop_index) == NUM_DROP)
+    for idx in range(len(beacons_locations)):
+        if idx != nearestBeaconIdx:
+            if idx in drop_index:
+                matA.append([0,0])
+                vecB.append([0])
+            else:
+                loc = beacons_locations[idx]
+                matA.append([vecN[0] - loc[0], vecN[1] - loc[1]])
+                vecB.append([(estimated_distance[i]**2 - rN**2) - (loc[0]**2 - vecN[0]**2) - (loc[1]**2 - vecN[1]**2)])
+
     # Zero out the most unreliable data
     print vecB
     print matA
-    for idx in drop_index:
-        vecB[idx] = [0]
-        matA[idx] = [0, 0]
-
-    matA = np.array(matA)
-    vecB = np.array(vecB)
-
 
     result = 0.5*np.matmult(np.linalg.pinv(matA),vecB)
     print result
