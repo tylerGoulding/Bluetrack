@@ -37,7 +37,8 @@ N = 6 #number of beacons
 M = 9 #number of locations (this should be more like 20)
 #change these to actual values
 
-possible_locations = [(1.13,1.9812), (1.13,6.9596), (3.8354,8.7122), (5.4864,6.9596), (3.4036,3.937), (5.4864,4.7244), (5.4864,2.286), (8.57,.9398),(10.5283,3.96)]
+#possible_locations = [(1.13,1.9812), (1.13,6.9596), (3.8354,8.7122), (5.4864,6.9596), (3.4036,3.937), (5.4864,4.7244), (5.4864,2.286), (8.57,.9398),(10.5283,3.96)]
+possible_locations = [(1.13,1.9812), (1.13,6.9596), (3.8354,8.7122), (100.4864,100.9596), (100.4036,100.937), (100.4864,100.7244), (100.4864,100.286), (8.57,.9398),(10.5283,3.96)]
 beacons_locations = [(1.7018,1.9812),(1.7018,6.9596), (5.7912,6.9596), (10.16,6.9592), (10.16,1.9812), (5.7912,1.9812)]
 path = []
 
@@ -51,7 +52,8 @@ path = []
 #         if not data: break
 #         total_data.append(data)
 #     return ''.join(total_data)
-
+def mean(numbers):
+    return float(sum(numbers)) / max(len(numbers), 1)
 #in csv format of timestamp,rssi_values
 def process_buffer(buffer):
   timestamp = []
@@ -106,6 +108,7 @@ estimated_distance = []
 print all_distances
 count = 0
 estimated_key = '-1'
+prev_pos = -1;
 while (1):
   count += 1
   rssi_values = []
@@ -113,6 +116,7 @@ while (1):
   print data
   # data = recv_all(conn);
   time_stamp, rssi_values = process_buffer(data)
+  # print rssi_values
   for position in xrange(len(rssi_values)):
     min_error = 1000
     estimated_location = (0,0)
@@ -120,49 +124,115 @@ while (1):
     for rssi in rssi_values[position]:
       d = 10**((int(rssi)-tx_power)/(-20.0))
       estimated_distance.append(d)
-    print estimated_distance
+    # print estimated_distance
 
     vecB = []
     matA = []
-    vecN = beacons_locations[-1]
-    rN = estimated_distance[-1]
-    for i in range(len(beacons_locations)-1):
-        loc = beacons_locations[i]
-        matA.append([vecN[0] - loc[0], vecN[1] - loc[1]])
-        vecB.append([(estimated_distance[i]**2 - rN**2) - (loc[0]**2 - vecN[0]**2) - (loc[1]**2 - vecN[1]**2)])
+    # vecN = beacons_locations[-1]
+    # rN = estimated_distance[-1]
+    # for i in range(len(beacons_locations)-1):
+    #     loc = beacons_locations[i]
+    #     matA.append([vecN[0] - loc[0], vecN[1] - loc[1]])
+    #     vecB.append([(estimated_distance[i]**2 - rN**2) - (loc[0]**2 - vecN[0]**2) - (loc[1]**2 - vecN[1]**2)])
 
 
-    NUM_DROP = 2 # number of data to drop
-    drop_index = np.argsort(np.array(estimated_distance))[-NUM_DROP:][::-1]
-    print "drop: " + str(drop_index)
+    # NUM_DROP = 2 # number of data to drop
+    # drop_index = np.argsort(np.array(estimated_distance))[-NUM_DROP:][::-1]
+    # print "drop: " + str(drop_index)
 
-    assert(len(drop_index) == NUM_DROP)
-    # Zero out the most unreliable data
-    print vecB
-    print matA
-    for idx in drop_index:
-        vecB[idx] = [0]
-        matA[idx] = [0, 0]
+    # assert(len(drop_index) == NUM_DROP)
+    # # Zero out the most unreliable data
+    # print vecB
+    # print matA
+    # for idx in drop_index:
+    #     vecB[idx] = [0]
+    #     matA[idx] = [0, 0]
 
-    matA = np.array(matA)
-    vecB = np.array(vecB)
+    # matA = np.array(matA)
+    # vecB = np.array(vecB)
 
 
-    result = 0.5*np.matmult(np.linalg.pinv(matA),vecB)
-    print result
-
+    # result = 0.5*np.matmult(np.linalg.pinv(matA),vecB)
+    # print result
+    
     #now we filled the estimated distance d0-d5 from each beacon
     #compare with actual distance
+    rv = rssi_values[0]
+    # dumb fingerprinting
+    if (rv.index(max(rv)) == 0):
+        ## likely near the left -- lower
+        print "lower left size"
+        if (rv.index(min(rv)) == 3):
+            print "+++ for sho"
+        if (abs(rv[0]-rv[1])<7) and (abs(rv[0]-rv[2])<7) and (abs(rv[1]-rv[2])<7):
+            print "position 4"
+        elif (abs(rv[0]) < 56) and (abs(mean(rv[2:5]))>63):
+            #likely pos 0
+            print "postion 0"
+    elif (rv.index(max(rv)) == 1):
+        ## likely near the left -- upper
+        print "upper left side"
+
+
+        if (abs(rv[1])<61) and (abs(rv[2])<61) and (abs(rv[2]-rv[1]) <= 6):
+            #no longer close to b0 so maybe postion 2:
+            print "postion 2"
+        elif (abs(rv[1]) < 54):
+            #likely pos 0   
+            print "postion 1"
+
+
+        elif (abs(rv[0]-rv[1])<7) and (abs(rv[0]-rv[2])<7) and (abs(rv[1]-rv[2])<7):
+            ##likely position 4
+            print "position 4"
+
+
+
+    elif (rv.index(max(rv)) == 2):
+        ## likely near the left -- upper
+        print "upper middle side"
+        if (abs(rv[1])<61) and (abs(rv[2])<61) and (abs(rv[2]-rv[1]) <= 6):
+            #no longer close to b0 so maybe postion 2:
+            print "postion 2"
+        elif (abs(rv[2])<53):
+            ##likely position 4
+            print "position 3"
+        elif (abs(rv[0]-rv[1])<5) and (abs(rv[0]-rv[2])<5) and (abs(rv[1]-rv[2])<5):
+            ##likely position 4
+            print "position 4"
+            
+    elif (rv.index(max(rv)) == 3):
+        ## likely near the left -- upper
+        print "upper right side"
+        if (abs(rv[4]-rv[3])< 6):
+            print 'position 8'
+
+    elif (rv.index(max(rv)) == 4):
+        ## likely near the left -- upper
+
+        print "lower right side"
+        if (abs(rv[4]-rv[3])< 6):
+            print 'position 8'
+        elif (abs(rv[4])<61) and (abs(rv[5])<64):
+            print 'position 7'
+    else:
+        print "lower middle side"
+        if (abs(rv[4])<61) and (abs(rv[5])<61) and (max(abs(rv[0]),abs(rv[1]))>65):
+            print 'position 7'
+
+        elif (abs(rv[5]) < 54):
+            print "position 6"
+
     for i in xrange(M):
       mean_squared_error = 0
       key = "m" + str(i)
       
       max_distance = sorted(all_distances[key])[2];
       for j,distance in enumerate(all_distances[key]):
-        if (distance <= max_distance):
-        	mean_squared_error += (estimated_distance[j] - distance)**2
+        #if (distance <= max_distance):
+        mean_squared_error += (estimated_distance[j] - distance)**2
       mean_squared_error /= float(N)
-      print key + ": "+ str(mean_squared_error)
+      #print key + ": "+ str(mean_squared_error)
       if (mean_squared_error < min_error):
         min_error = mean_squared_error
         estimated_location = possible_locations[i]
@@ -170,7 +240,7 @@ while (1):
 
 
     print ('Closest to: b' + str(estimated_distance.index(min(estimated_distance))))
-    print (time_stamp[position] + " " + str(estimated_location) + " " + estimated_key)
+    # print (time_stamp[position] + " " + str(estimated_location) + " " + estimated_key)
     path.append((time_stamp[position],estimated_location))
 
 print path

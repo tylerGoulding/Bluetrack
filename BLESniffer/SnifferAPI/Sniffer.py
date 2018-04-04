@@ -7,7 +7,7 @@ def initLog():
     logging.info("--------------------------------------------------------")
     logging.info("Software version: "+Version.getReadableVersionString(Version.getRevision()))
     
-initLog()
+# initLog()
 
 
 
