@@ -28,7 +28,7 @@ from cStringIO import StringIO
 import numpy as np
 
 HOST = ''
-PORT = 50009              # Arbitrary non-privileged port
+PORT = 8000              # Arbitrary non-privileged port
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
@@ -105,15 +105,16 @@ estimated_distance = []
 #     "00:20,-76,-71,-66,-75,-67,-76\n"
 #     "00:22,-85,-68,-66,-65,-67,-86")]
 
-print all_distances
+# print all_distances
 count = 0
 estimated_key = '-1'
 prev_pos = -1;
 while (1):
+  print "--------------------------------------"
   count += 1
   rssi_values = []
   data = conn.recv(1024)
-  print data
+  # print data
   # data = recv_all(conn);
   time_stamp, rssi_values = process_buffer(data)
   # print rssi_values
@@ -161,12 +162,12 @@ while (1):
     #compare with actual distance
     rv = rssi_values[0]
     # dumb fingerprinting
-    if (rv.index(max(rv)) == 0):
+    if (abs((max(rv)-min(rv)))<3):
+        print "positon 4"
+    elif (rv.index(max(rv)) == 0):
         ## likely near the left -- lower
-        print "lower left size"
-        if (rv.index(min(rv)) == 3):
-            print "+++ for sho"
-        if (abs(rv[0]-rv[1])<7) and (abs(rv[0]-rv[2])<7) and (abs(rv[1]-rv[2])<7):
+        print "lower left side"
+        if (abs(rv[0]-rv[5])<5) and (abs(rv[0]-rv[2])<7) and (abs(rv[1]-rv[2])<7):
             print "position 4"
         elif (abs(rv[0]) < 56) and (abs(mean(rv[2:5]))>63):
             #likely pos 0
@@ -187,21 +188,28 @@ while (1):
         elif (abs(rv[0]-rv[1])<7) and (abs(rv[0]-rv[2])<7) and (abs(rv[1]-rv[2])<7):
             ##likely position 4
             print "position 4"
+        elif ((abs(rv[1]-rv[5])<5)):
+            print "position 4"
 
 
 
     elif (rv.index(max(rv)) == 2):
         ## likely near the left -- upper
         print "upper middle side"
-        if (abs(rv[1])<61) and (abs(rv[2])<61) and (abs(rv[2]-rv[1]) <= 6):
+        if (abs(rv[5]-rv[2])<5) and (abs(rv[0]-rv[2])<5) and (abs(rv[1]-rv[2])<5):
+            ##likely position 4
+
+            print "position 4"
+        elif ((abs(rv[2]-rv[5])<3)):
+            print "position 4"
+        elif (abs(rv[1])<61) and (abs(rv[2])<61) and (abs(rv[2]-rv[1]) <= 6):
             #no longer close to b0 so maybe postion 2:
             print "postion 2"
+
         elif (abs(rv[2])<53):
             ##likely position 4
             print "position 3"
-        elif (abs(rv[0]-rv[1])<5) and (abs(rv[0]-rv[2])<5) and (abs(rv[1]-rv[2])<5):
-            ##likely position 4
-            print "position 4"
+
             
     elif (rv.index(max(rv)) == 3):
         ## likely near the left -- upper
@@ -219,9 +227,14 @@ while (1):
             print 'position 7'
     else:
         print "lower middle side"
-        if (abs(rv[4])<61) and (abs(rv[5])<61) and (max(abs(rv[0]),abs(rv[1]))>65):
+        if (abs(rv[5]) < 52):
+            print "position 6"
+        # elif (abs(rv[0]-rv[5])<5) and (abs(rv[5]-rv[2])<4) and (abs(rv[1]-rv[5])<4):
+            ##likely position 4
+            
+            # print "position 4"
+        elif (abs(rv[4])<60) and (abs(rv[5])<60) and (max(abs(rv[0]),abs(rv[1]))>65):
             print 'position 7'
-
         elif (abs(rv[5]) < 54):
             print "position 6"
 
