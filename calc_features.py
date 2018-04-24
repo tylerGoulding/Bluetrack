@@ -37,32 +37,31 @@ def generateSets(dataDict, type = "region"):
       data_pos = position.split("_")[0]
 
     data = dataDict[position];
-    feat = []
     shuffle(data);
     print position
     for i,moment in enumerate(data):
       # print i
       # print moment
-
-      for nodeRSSI in moment:
-        if nodeRSSI == []:
-          #something something train
-          continue;
-        else:
-          nodeRSSI = np.array(nodeRSSI);
-          mean    = np.mean(nodeRSSI);
-          minRSSI = min(nodeRSSI);
-          maxRSSI = max(nodeRSSI);
-          var     = np.var(nodeRSSI);
-          mode    = stats.mode(nodeRSSI);      
-          feat += [mean, minRSSI, maxRSSI, var, mode];
-      # print len(feat) # should be 30 features long
-      if i < 50:
-        trainX.append(feat);
-        trainY.append(position);
+      feat = []
+      if [] in moment:
+        continue
       else:
-        testX.append(feat);
-        testY.append(position);
+        for nodeRSSI in moment:
+            # nodeRSSI = np.array(nodeRSSI);
+            mean    = np.mean(nodeRSSI);
+            minRSSI = min(nodeRSSI);
+            maxRSSI = max(nodeRSSI);
+            var     = np.var(nodeRSSI);
+            mode    = stats.mode(np.array(nodeRSSI));      
+            feat += [mean, minRSSI, maxRSSI, var, int(mode[0])];
+        # print len(feat) # should be 30 features long
+        # print feat
+        if (i < 50):
+          trainX.append(feat);
+          trainY.append(position);
+        else:
+          testX.append(feat);
+          testY.append(position);
 
   return trainX, trainY, testX, testY
       
@@ -112,12 +111,13 @@ def main():
         # features.append(data)
 
   X, Y, testX, testY = generateSets(rawData);
-
+  print len(X)
   train_set = np.array(X)
+  # print train_set
   print train_set.shape
   # clf = MLPClassifier(solver='lbfgs', alpha=1e-5,hidden_layer_sizes=(11,4), random_state=1)
   clf = NearestCentroid();
-  clf.fit(train_set, X);
+  clf.fit(train_set, Y);
   print clf.score(testX,testY)
   
   clf = KNeighborsClassifier(n_neighbors=60, weights="distance")
@@ -129,12 +129,12 @@ def main():
   # print len(testX)
   # print len(predictedTest)
   # print len(testRoots)
-  for i,pred in enumerate(predictedTest):
-    total +=1;
+  # for i,pred in enumerate(predictedTest):
+    # total +=1;
     # print i
-    if pred == testRoots[i]:
-      correct +=1;
-  print "correct: ",correct, "total: ",total
+    # if pred == testRoots[i]:
+      # correct +=1;
+  # print "correct: ",correct, "total: ",total
   # clf = NearestCentroid()
   # clf.fit(train_set, Y)
 
