@@ -28,9 +28,13 @@ def main():
         data = list(line.split(","))[1:]
         data = map(int,data)
         if (len(data) == 18):
+          data.append(data[2]-data[0]);
+
+          # data.append(data[1]-data[0]);          
           features.append(data)
+
         elif (len(data) == 16):
-          data = [-150,-150]+data
+          data = [-150,-150]+data + [0]
           # print data
           features.append(data)
 
@@ -66,15 +70,16 @@ def main():
   predictedTest = clf.predict(testX)
   correct = 0
   total = 0
+  print clf.score(testX,testRoots)
   # print len(testX)
   # print len(predictedTest)
   # print len(testRoots)
-  for i,pred in enumerate(predictedTest):
-    total +=1;
-    # print i
-    if pred == testRoots[i]:
-      correct +=1;
-  print "correct: ",correct, "total: ",total
+  # for i,pred in enumerate(predictedTest):
+  #   total +=1;
+  #   # print i
+  #   if pred == testRoots[i]:
+  #     correct +=1;
+  # print "correct: ",correct, "total: ",total
   # clf = NearestCentroid()
   # clf.fit(train_set, Y)
 
