@@ -32,7 +32,7 @@ testRoots =[]
 valid_types = ['region','room','region_given_room']
 valid_rooms = ['5300','5302','5304']
   
-def generateSets(dataDict, granularity = "region",room = ""):
+def generateSets(dataDict, granularity = "region",ignore_node=-1, room = ""):
 
   if granularity not in valid_types:
     return -1;
@@ -58,12 +58,14 @@ def generateSets(dataDict, granularity = "region",room = ""):
       feat = []
       if [] not in moment:
         for j, nodeRSSI in enumerate(moment):
-            mean    = np.mean(nodeRSSI);
-            median = np.median(nodeRSSI);
-            minRSSI = min(nodeRSSI);
-            maxRSSI = max(nodeRSSI); 
-            feat += [mean , median]
-        if (i < 60):
+          if (j == ignore_node):
+            continue;
+          mean    = np.mean(nodeRSSI);
+          median  = np.median(nodeRSSI);
+          minRSSI = min(nodeRSSI);
+          maxRSSI = max(nodeRSSI); 
+          feat += [mean , median]
+        if (i < 50):
           trainX.append(feat);
           trainY.append(data_pos);
         else:
@@ -124,7 +126,7 @@ def main():
   ## Testing on all 11 regions
   ########
 
-  X, Y, testX, testY = generateSets(rawData);
+  X, Y, testX, testY,_ = generateSets(rawData);
   train_set = np.array(X)
   # print train_set
   # clf = MLPClassifier(solver='lbfgs', alpha=1e-5,hidden_layer_sizes=(11,4), random_state=1)
@@ -167,23 +169,19 @@ def main():
   ########
   ## Testing on room level (3 values)
   ########
-  X, Y, testX, testY = generateSets(rawData,"room");
+  X, Y, testX, testY, testY_full = generateSets(rawData,"room");
   train_set = np.array(X)
-  # clf = NearestCentroid();
-  # clf.fit(train_set, Y);
-  # print clf.score(testX,testY)
-  
-  clf = KNeighborsClassifier(n_neighbors=12, weights="distance")
-  clf.fit(train_set, Y)
-  predictedTest = clf.predict(testX)
-  print "knn - room"
-  print clf.score(testX,testY)
 
   clf = SVC(kernel='linear', C=2).fit(train_set, Y)
   predictedTest = clf.predict(testX)
   print "svc - room"
   print clf.score(testX,testY)
-  print set(testY)
+
+  clf = KNeighborsClassifier(n_neighbors=12, weights="distance")
+  clf.fit(train_set, Y)
+  predictedTest = clf.predict(testX)
+  print "knn - room"
+  print clf.score(testX,testY)
   correct5300 = 0
   total5300 = 0
   correct5302 = 0
@@ -224,7 +222,6 @@ def main():
   print "5304"
   print "correct: ",correct5304, "total: ",total5304
   print "accuracy: ", correct5304*100/float(total5304)
-
 
   # correct = 0
   # total = 0
