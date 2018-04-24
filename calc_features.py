@@ -12,7 +12,6 @@ from scipy import stats
 import ast
 from sklearn.svm import SVC
 from collections import Counter 
-from sklearn.externals import joblib
 
 
 #### facilitate programming between Project Memebers
@@ -33,12 +32,13 @@ testRoots =[]
 valid_types = ['region','room']
 valid_rooms = ['5300','5302','5304']
   
-def generateSets(dataDict, granularity = "region", ignore_node = -1):
+def generateSets_blah(dataDict, granularity = "region", ignore_node = -1):
 
   if granularity not in valid_types:
     return -1;
-  if ignore_node > 5:
-    return -1;
+
+  # if ignore_node > 5:
+    # return -1;
   trainX = []
   trainY = []
   testX  = []
@@ -59,7 +59,7 @@ def generateSets(dataDict, granularity = "region", ignore_node = -1):
       feat = []
       if [] not in moment:
         for j, nodeRSSI in enumerate(moment):
-            if (j == ignore_node): 
+            if (j == 0) or j == 3: 
               continue;
             mean = np.mean(nodeRSSI);
             median = np.median(nodeRSSI);
@@ -76,21 +76,69 @@ def generateSets(dataDict, granularity = "region", ignore_node = -1):
 
   return trainX, trainY, testX, testY,testY_full
 
-def generate_room_specific_classifiers(dataDict):
+
+def generateSets(dataDict, granularity = "region", ignore_node = -1):
+
+  if granularity not in valid_types:
+    return -1;
+
+  # if ignore_node > 5:
+    # return -1;
+  trainX = []
+  trainY = []
+  testX  = []
+  testY  = []
+  testY_full =[]
+
+  for position in dataDict.keys():
+    if granularity == 'region':
+      data_pos = position;
+    elif granularity == 'room':
+      data_pos = position.split("_")[0]
+    else:
+      data_pos = position;
+
+    data = dataDict[position];
+    shuffle(data);
+    for i,moment in enumerate(data):
+      feat = []
+      if [] not in moment:
+        for j, nodeRSSI in enumerate(moment):
+            if type(ignore_node) == list:
+              if j in ignore_node:
+                continue;
+            elif (j == ignore_node): 
+              continue;
+            mean = np.mean(nodeRSSI);
+            median = np.median(nodeRSSI);
+            minRSSI = min(nodeRSSI);
+            maxRSSI = max(nodeRSSI); 
+            feat += [mean , median];
+        if (i < 50):
+          trainX.append(feat);
+          trainY.append(data_pos);
+        else:
+          testX.append(feat);
+          testY.append(data_pos);
+          testY_full.append(position);
+
+  return trainX, trainY, testX, testY,testY_full
+
+def generate_room_specific_classifiers(dataDict,node = -1):
   dict5300 = dict((k,dataDict[k]) for k in dataDict.keys() if "5300" in k)
-  X, Y, testX, testY,_ = generateSets(dict5300);
+  X, Y, testX, testY,_ = generateSets(dict5300,'region',node);
   train_set = np.array(X)
   clf5300 = KNeighborsClassifier(n_neighbors=60, weights="distance").fit(train_set, Y); #SVC(kernel='linear', C=2).fit(train_set, Y)
 
   dict5302 = dict((k,dataDict[k]) for k in dataDict.keys() if "5302" in k)
-  X, Y, testX, testY,_ = generateSets(dict5302);
+  X, Y, testX, testY,_ = generateSets(dict5302,'region',node);
   train_set = np.array(X)
 
   clf5302 =  KNeighborsClassifier(n_neighbors=60, weights="distance").fit(train_set, Y); #SVC(kernel='linear', C=2).fit(train_set, Y)
   train_set = np.array(X)
 
   dict5304 = dict((k,dataDict[k]) for k in dataDict.keys() if "5304" in k)
-  X, Y, testX, testY,_ = generateSets(dict5304);
+  X, Y, testX, testY,_ = generateSets(dict5304,'region',node);
   train_set = np.array(X)
 
   clf5304 = KNeighborsClassifier(n_neighbors=60, weights="distance").fit(train_set, Y); # SVC(kernel='linear', C=2).fit(train_set, Y)
@@ -99,14 +147,15 @@ def generate_room_specific_classifiers(dataDict):
   return clf5300,clf5302,clf5304
 
 
-def generate_node_off_classifiers(dataDict):
+def generate_node_off_classifiers(dataDict,region = "region"):
   off_classifiers = []
   for node in xrange(6):
-    X, Y, testX, testY,_ = generateSets(dataDict,'region',node);
+    X, Y, testX, testY,_ = generateSets(dataDict,region,node);
     train_set = np.array(X)
     clf = KNeighborsClassifier(n_neighbors=60, weights="distance").fit(train_set, Y); #SVC(kernel='linear', C=2).fit(train_set, Y)
     off_classifiers.append((clf,testX,testY));
   return off_classifiers;
+
       
 def main():
   global X,Y,testX,testRoots
@@ -133,6 +182,9 @@ def main():
 
 
   clf5300,clf5302,clf5304 = generate_room_specific_classifiers(rawData);   
+  joblib.dump(clf5300, 'knn_region_given_5300.pkl') 
+  joblib.dump(clf5302, 'knn_region_given_5302.pkl') 
+  joblib.dump(clf5304, 'knn_region_given_5304.pkl') 
 
   ########
   ## Testing on all 11 regions
@@ -144,6 +196,8 @@ def main():
   # clf = MLPClassifier(solver='lbfgs', alpha=1e-5,hidden_layer_sizes=(11,4), random_state=1)
   clf = KNeighborsClassifier(n_neighbors=60, weights="distance")
   clf.fit(train_set, Y)
+  joblib.dump(clf, 'knn_region.pkl') 
+
   predictedTest = clf.predict(testX)
   print "knn - region"
   print clf.score(testX,testY)
@@ -189,6 +243,8 @@ def main():
   
   clf = KNeighborsClassifier(n_neighbors=12, weights="distance")
   clf.fit(train_set, Y)
+  joblib.dump(clf, 'knn_room.pkl') 
+
   predictedTest = clf.predict(testX)
   print "knn - room"
   print clf.score(testX,testY)
@@ -239,8 +295,39 @@ def main():
   # print node_off_list
   for i,values in enumerate(node_off_list):
     clf,testX,testY = values[:];
+    joblib.dump(clf, str.format('knn_region_node_{}_off.pkl',i)); 
     print "Turning off node:", i;
     print clf.score(testX,testY)
+
+  node_off_list_room = generate_node_off_classifiers(rawData,'room');
+  # print node_off_list
+  for i,values in enumerate(node_off_list):
+    clf,testX,testY = values[:];
+    joblib.dump(clf, str.format('knn_room_node_{}_off.pkl',i)); 
+    print "Turning off node:", i;
+    print clf.score(testX,testY)
+
+  for i in xrange(6):
+    clf5300,clf5302,clf5304 = generate_room_specific_classifiers(rawData,i);   
+    joblib.dump(clf5300, str.format('knn_region_given_5300_node_{}_off.pkl',i)) 
+    joblib.dump(clf5302, str.format('knn_region_given_5302_node_{}_off.pkl',i)) 
+    joblib.dump(clf5304, str.format('knn_region_given_5304_node_{}_off.pkl',i)) 
+
+  X, Y, testX, testY,_ = generateSets_blah(rawData,'room');
+  train_set = np.array(X)
+  test_setX = np.array(testX)
+
+  test_setY = np.array(testY)
+
+  print train_set.shape
+
+  print test_setX.shape
+  print test_setY.shape
+  clf_node0_node3_off = KNeighborsClassifier(n_neighbors=12, weights="distance").fit(train_set, Y); #SVC(kernel='linear', C=2).fit(train_set, Y)
+  # print testX[0]
+  print clf_node0_node3_off.score(testX,testY)
+  joblib.dump(clf, 'knn_n0_n3_off.pkl') 
+
 
 if __name__ == '__main__':
   main()
