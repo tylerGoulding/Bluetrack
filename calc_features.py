@@ -13,23 +13,27 @@ import ast
 from sklearn.svm import SVC
 from collections import Counter 
 
-mac_list = ["b8:27:eb:b6:43:f8", "b8:27:eb:d3:4c:7f","b8:27:eb:cd:4b:81","b8:27:eb:ee:32:b8","b8:27:eb:e7:50:37","b8:27:eb:63:a1:e3"]
-Y = []
-X = []
-testX = []
-testRoots =[]
+
+#### facilitate programming between Project Memebers
 dirname_tyler = "/Users/Tyler/Documents/GitHub/Bluetrack/data3/"
 dirname_fatema = "C:\\Users\\Fatema Almeshqab\\Desktop\\Bluetrack\\data3\\"
-
 if platform.system() == 'Darwin':
   dirname = dirname_tyler
 else:
   dirname = dirname_fatema
 
+mac_list = ["b8:27:eb:b6:43:f8", "b8:27:eb:d3:4c:7f","b8:27:eb:cd:4b:81","b8:27:eb:ee:32:b8","b8:27:eb:e7:50:37","b8:27:eb:63:a1:e3"]
+Y = []
+X = []
+testX = []
+testRoots =[]
+
+# Validity checks
 valid_types = ['region','room','region_given_room']
 valid_rooms = ['5300','5302','5304']
   
 def generateSets(dataDict, granularity = "region",room = ""):
+
   if granularity not in valid_types:
     return -1;
   if (granularity == 'region_given_room') and room not in valid_rooms:
@@ -39,6 +43,7 @@ def generateSets(dataDict, granularity = "region",room = ""):
   testX  = []
   testY  = []
   testY_full =[]
+
   for position in dataDict.keys():
     if granularity == 'region':
       data_pos = position;
@@ -49,27 +54,15 @@ def generateSets(dataDict, granularity = "region",room = ""):
 
     data = dataDict[position];
     shuffle(data);
-    # print position
     for i,moment in enumerate(data):
-      # print i
-      # print moment
       feat = []
-      if [] in moment:
-        continue
-      else:
+      if [] not in moment:
         for j, nodeRSSI in enumerate(moment):
-            #if (j == 0): continue;
-            # nodeRSSI = np.array(nodeRSSI);
             mean    = np.mean(nodeRSSI);
             median = np.median(nodeRSSI);
             minRSSI = min(nodeRSSI);
-            maxRSSI = max(nodeRSSI);
-            # var     = np.var(nodeRSSI);
-            # mode    = stats.mode(np.array(nodeRSSI)); 
-            # median = np.median(nodeRSSI);     
-            feat += [mean , median] #, minRSSI, maxRSSI] #, int(mode[0])];
-        # print len(feat) # should be 30 features long
-        # print feat
+            maxRSSI = max(nodeRSSI); 
+            feat += [mean , median]
         if (i < 60):
           trainX.append(feat);
           trainY.append(data_pos);
@@ -77,7 +70,6 @@ def generateSets(dataDict, granularity = "region",room = ""):
           testX.append(feat);
           testY.append(data_pos);
           testY_full.append(position);
-
   return trainX, trainY, testX, testY,testY_full
 
 def generate_room_specific_classifiers(dataDict):
