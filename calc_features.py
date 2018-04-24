@@ -83,36 +83,14 @@ def main():
       for line in f.readlines():
         if line[0].isdigit():   
           continue;       
-          # line = line.rstrip()
-          # line = line.replace("(", "")
-          # line = line.replace(")", "")
-          # # print line
-          # # data = re.split(r',\s*(?![^()]*\))', line)
-          # data = list(line.split(","))[1:]
-          # data = map(int,data)
-          # if (len(data) == 18):
-          #   # data.append(data[2]-data[0]);
-          #   # data.append(data[1]-data[0]);          
-          #   features.append(data)
-          # elif (len(data) == 16):
-          #   data = [-150,-150] + data + [0]
-          #   # print data
-          #   features.append(data)
-          # else: print root, data
-            
         else:
           parts = ast.literal_eval(line)
-          # line = line.rstrip("]").lstrip("[");
-          # parts = re.split(r',\s*(?![^()]*\))', line);
-          
           parts.sort(key=lambda x: mac_list.index(x[0]))
           raw_list = [x[1] for x in parts];
-          rawData[root].append(raw_list)
-          # room_level_Y.append(root[0:4]);
-          
-        # print data
-        # features.append(data)
-
+          rawData[root].append(raw_list)          
+  ########
+  ## Testing on all 11 regions
+  ########
   X, Y, testX, testY = generateSets(rawData);
   print len(X)
   train_set = np.array(X)
@@ -133,12 +111,16 @@ def main():
   print "svc - region"
   print clf.score(testX,testY)
 
+
+
+  ########
+  ## Testing on room level (3 values)
+  ########
   X, Y, testX, testY = generateSets(rawData,"room");
   print len(X)
   train_set = np.array(X)
   # print train_set
   print train_set.shape
-  # clf = MLPClassifier(solver='lbfgs', alpha=1e-5,hidden_layer_sizes=(11,4), random_state=1)
   clf = NearestCentroid();
   clf.fit(train_set, Y);
   print clf.score(testX,testY)
