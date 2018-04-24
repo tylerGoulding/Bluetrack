@@ -25,23 +25,25 @@ else:
   dirname = dirname_fatema
 
 valid_types = ['region','room','region_given_room']
+valid_rooms = ['5300','5302','5304']
   
-def generateSets(dataDict, type = "region"):
-  if type not in valid_types:
+def generateSets(dataDict, granularity = "region",room = ""):
+  if granularity not in valid_types:
+    return -1;
+  if (granularity == 'region_given_room') and room not in valid_rooms:
     return -1;
   trainX = []
   trainY = []
   testX  = []
   testY  = []
   for position in dataDict.keys():
-    if type == 'region':
+    if granularity == 'region':
       data_pos = position;
-    elif type == 'room':
+    elif granularity == 'room':
       data_pos = position.split("_")[0]
-
     data = dataDict[position];
     shuffle(data);
-    print position
+    # print position
     for i,moment in enumerate(data):
       # print i
       # print moment
@@ -74,7 +76,7 @@ def main():
   for filename in os.listdir(dirname):
     global X,Y,testX,testRoots
     root, ext = os.path.splitext(filename)
-    file = dirname_tyler + filename
+    file = dirname + filename
     # Y.append(root);
     features = [];
     room_level_Y = [];
@@ -97,6 +99,7 @@ def main():
   # print train_set
   print train_set.shape
   # clf = MLPClassifier(solver='lbfgs', alpha=1e-5,hidden_layer_sizes=(11,4), random_state=1)
+  
   clf = NearestCentroid();
   clf.fit(train_set, Y);
   print clf.score(testX,testY)
@@ -107,7 +110,8 @@ def main():
   correct = 0
   total = 0
   print clf.score(testX,testY)
-  clf = SVC(kernel='linear', C=1).fit(train_set, Y)
+  
+  clf = SVC(kernel='linear', C=2).fit(train_set, Y)
   print "svc - region"
   print clf.score(testX,testY)
 
@@ -125,31 +129,19 @@ def main():
   clf.fit(train_set, Y);
   print clf.score(testX,testY)
   
-  clf = KNeighborsClassifier(n_neighbors=60)#, weights="distance")
+  clf = KNeighborsClassifier(n_neighbors=60)  #, weights="distance")
   clf.fit(train_set, Y)
   predictedTest = clf.predict(testX)
   # correct = 0
   # total = 0
   print clf.score(testX,testY)
 
-  clf = SVC(kernel='linear', C=1).fit(train_set, Y)
+  clf = SVC(kernel='linear', C=2).fit(train_set, Y)
   print "svc"
   print clf.score(testX,testY)
   print set(testY)
 
-  # print len(testX)
-  # print len(predictedTest)
-  # print len(testRoots)
-  # for i,pred in enumerate(predictedTest):
-    # total +=1;
-    # print i
-    # if pred == testRoots[i]:
-      # correct +=1;
-  # print "correct: ",correct, "total: ",total
-  # clf = NearestCentroid()
-  # clf.fit(train_set, Y)
 
-  # predictedTest = clf.predict(testX)
   # correct = 0
   # total = 0
   # print len(testX)
