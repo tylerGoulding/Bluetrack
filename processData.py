@@ -6,6 +6,7 @@ from sklearn.neighbors.nearest_centroid import NearestCentroid
 from sklearn.externals import joblib
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.neural_network import MLPClassifier
+import re
 Y = []
 X = []
 testX = []
@@ -74,12 +75,12 @@ def main():
   # print len(testX)
   # print len(predictedTest)
   # print len(testRoots)
-  # for i,pred in enumerate(predictedTest):
-  #   total +=1;
-  #   # print i
-  #   if pred == testRoots[i]:
-  #     correct +=1;
-  # print "correct: ",correct, "total: ",total
+  for i,pred in enumerate(predictedTest):
+    total +=1;
+    # print i
+    if pred == testRoots[i]:
+      correct +=1;
+  print "correct: ",correct, "total: ",total
   # clf = NearestCentroid()
   # clf.fit(train_set, Y)
 
