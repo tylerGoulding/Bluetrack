@@ -13,7 +13,6 @@ import ast
 from sklearn.svm import SVC
 from collections import Counter 
 
-
 #### facilitate programming between Project Memebers
 dirname_tyler = "/Users/Tyler/Documents/GitHub/Bluetrack/data3/"
 dirname_fatema = "C:\\Users\\Fatema Almeshqab\\Desktop\\Bluetrack\\data3\\"
@@ -104,16 +103,13 @@ def generateSets(dataDict, granularity = "region", ignore_node = -1):
       feat = []
       if [] not in moment:
         for j, nodeRSSI in enumerate(moment):
-            if type(ignore_node) == list:
-              if j in ignore_node:
-                continue;
-            elif (j == ignore_node): 
-              continue;
-            mean = np.mean(nodeRSSI);
-            median = np.median(nodeRSSI);
-            minRSSI = min(nodeRSSI);
-            maxRSSI = max(nodeRSSI); 
-            feat += [mean , median];
+          if (j == ignore_node):
+            continue;
+          mean    = np.mean(nodeRSSI);
+          median  = np.median(nodeRSSI);
+          minRSSI = min(nodeRSSI);
+          maxRSSI = max(nodeRSSI); 
+          feat += [mean , median]
         if (i < 50):
           trainX.append(feat);
           trainY.append(data_pos);
@@ -164,8 +160,6 @@ def main():
   for filename in os.listdir(dirname):
     root, ext = os.path.splitext(filename)
     regions.append(root);
-    # if (filename == "5302_middle_3.txt"): 
-    #   continue
     file = dirname + filename
     features = [];
     room_level_Y = [];
@@ -179,7 +173,6 @@ def main():
           parts.sort(key=lambda x: mac_list.index(x[0]))
           raw_list = [x[1] for x in parts];
           rawData[root].append(raw_list)     
-
 
   clf5300,clf5302,clf5304 = generate_room_specific_classifiers(rawData);   
   joblib.dump(clf5300, 'knn_region_given_5300.pkl') 
@@ -237,10 +230,12 @@ def main():
   ########
   X, Y, testX, testY, testY_full = generateSets(rawData,"room");
   train_set = np.array(X)
-  # clf = NearestCentroid();
-  # clf.fit(train_set, Y);
-  # print clf.score(testX,testY)
-  
+
+  clf_room = SVC(kernel='linear', C=2).fit(train_set, Y)
+  predictedTest = clf_room.predict(testX)
+  print "svc - room"
+  print clf.score(testX,testY)
+
   clf = KNeighborsClassifier(n_neighbors=12, weights="distance")
   clf.fit(train_set, Y)
   joblib.dump(clf, 'knn_room.pkl') 
@@ -248,12 +243,6 @@ def main():
   predictedTest = clf.predict(testX)
   print "knn - room"
   print clf.score(testX,testY)
-
-  clf_room = SVC(kernel='linear', C=2).fit(train_set, Y)
-  predictedTest = clf_room.predict(testX)
-  print "svc - room"
-  print clf_room.score(testX,testY)
-  print set(testY)
   correct5300 = 0
   total5300 = 0
   correct5302 = 0
@@ -290,7 +279,20 @@ def main():
   print "5304"
   print "correct: ",correct5304, "total: ",total5304
   print "accuracy: ", correct5304*100/float(total5304)
-
+  # correct = 0
+  # total = 0
+  # print len(testX)
+  # print len(predictedTest)
+  # print len(testY)
+  # for i,pred in enumerate(predictedTest):
+  #   total +=1;
+  #   # print i
+  #   if pred == testY[i]:
+  #     correct +=1;
+  #   else:
+  #     print pred,"|||" ,testY[i]
+  # print "correct: ",correct, "total: ",total
+  print ""
   node_off_list = generate_node_off_classifiers(rawData);
   # print node_off_list
   for i,values in enumerate(node_off_list):
