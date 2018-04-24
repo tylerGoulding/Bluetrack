@@ -72,10 +72,12 @@ def generateSets(dataDict, granularity = "region",room = ""):
       
       
 def main():
+  global X,Y,testX,testRoots
   rawData = {}
   for filename in os.listdir(dirname):
-    global X,Y,testX,testRoots
     root, ext = os.path.splitext(filename)
+    if (filename == "5302_middle_3.txt"): 
+      continue
     file = dirname + filename
     # Y.append(root);
     features = [];
@@ -120,7 +122,7 @@ def main():
   ########
   ## Testing on room level (3 values)
   ########
-  X, Y, testX, testY = generateSets(rawData,"room");
+  X, Y, testX, testY = generateSets(rawData,"region");
   print len(X)
   train_set = np.array(X)
   # print train_set
@@ -141,19 +143,18 @@ def main():
   print clf.score(testX,testY)
   print set(testY)
 
-
-  # correct = 0
-  # total = 0
-  # print len(testX)
-  # print len(predictedTest)
-  # print len(testRoots)
-  # for i,pred in enumerate(predictedTest):
-  #   total +=1;
-  #   # print i
-  #   if pred == testRoots[i]:
-  #     correct +=1;
-  #   else:
-  #     print pred,"|||" ,testRoots[i]
-  # print "correct: ",correct, "total: ",total
+  correct = 0
+  total = 0
+  print len(testX)
+  print len(predictedTest)
+  print len(testY)
+  for i,pred in enumerate(predictedTest):
+    total +=1;
+    # print i
+    if pred == testY[i]:
+      correct +=1;
+    else:
+      print pred,"|||" ,testY[i]
+  print "correct: ",correct, "total: ",total
 if __name__ == '__main__':
   main()
