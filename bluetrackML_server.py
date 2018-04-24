@@ -19,6 +19,7 @@ def process_buffer(buffer):
   return timestamp, rssi_values
 
 def main():
+    #load all training models with one node off as well
     clf = joblib.load('training.pkl') 
     HOST = ''
     PORT = 8000              # Arbitrary non-privileged port
@@ -34,16 +35,32 @@ def main():
     conn, addr = s.accept()
     print "Accepted Connection:", addr
     pred = ["","",""]
+    previous_room = "";
     i = 0
-    while (1):
-        
+    while (1): 
         data = conn.recv(1024)
         timestamp,rssi_values = process_buffer(data)
-        # print   
-        predict = clf.predict(rssi_values)
-        pred[i] = (predict[0])
+        # check if one of the nodes is off, -150 for over 10 seconds?
+        # choose the correct clf
+        current_room = clf.predict(rssi_values)[0]
+        if (previous_room == ""):
+            previous_room = current_room;
+        else:
+            #include here a list of all non-possible paths
+            #if prediction is not possible, ignore
+            #but also set a timer, it is only possible if time < ~20 seconds/some arbitrary number
+            if (((previous_room[0:4] == '5302') and  (current_room[0:4] == '5304')) or
+              ((previous_room[0:4] == '5304') and  (current_room[0:4] == '5302'))):
+                # print previous_room, testY[i]; 
+                # do nothing
+                continue;
+            else:
+                previous_room = current_room;
+
+        pred[i] = (previous_room)
         i = (i+1)%3
         print pred
+        print previous_room
         print max(pred, key=pred.count)
 
 

@@ -11,6 +11,8 @@ import re
 from scipy import stats
 import ast
 from sklearn.svm import SVC
+from collections import Counter 
+
 mac_list = ["b8:27:eb:b6:43:f8", "b8:27:eb:d3:4c:7f","b8:27:eb:cd:4b:81","b8:27:eb:ee:32:b8","b8:27:eb:e7:50:37","b8:27:eb:63:a1:e3"]
 Y = []
 X = []
@@ -51,7 +53,8 @@ def generateSets(dataDict, granularity = "region",room = ""):
       if [] in moment:
         continue
       else:
-        for nodeRSSI in moment:
+        for j, nodeRSSI in enumerate(moment):
+            #if (j == 0): continue;
             # nodeRSSI = np.array(nodeRSSI);
             mean    = np.mean(nodeRSSI);
             minRSSI = min(nodeRSSI);
@@ -59,10 +62,10 @@ def generateSets(dataDict, granularity = "region",room = ""):
             var     = np.var(nodeRSSI);
             mode    = stats.mode(np.array(nodeRSSI)); 
             median = np.median(nodeRSSI);     
-            feat += [mean, median] #, minRSSI, maxRSSI] #, int(mode[0])];
+            feat += [mean , median] #, minRSSI, maxRSSI] #, int(mode[0])];
         # print len(feat) # should be 30 features long
         # print feat
-        if (i < 50):
+        if (i < 60):
           trainX.append(feat);
           trainY.append(data_pos);
         else:
@@ -75,12 +78,13 @@ def generateSets(dataDict, granularity = "region",room = ""):
 def main():
   global X,Y,testX,testRoots
   rawData = {}
+  regions = [];
   for filename in os.listdir(dirname):
     root, ext = os.path.splitext(filename)
+    regions.append(root);
     # if (filename == "5302_middle_3.txt"): 
     #   continue
     file = dirname + filename
-    # Y.append(root);
     features = [];
     room_level_Y = [];
     rawData[root] = [];
@@ -100,55 +104,81 @@ def main():
   train_set = np.array(X)
   # print train_set
   # clf = MLPClassifier(solver='lbfgs', alpha=1e-5,hidden_layer_sizes=(11,4), random_state=1)
-  
-  clf = NearestCentroid();
-  clf.fit(train_set, Y);
-  print clf.score(testX,testY)
-
   clf = KNeighborsClassifier(n_neighbors=60, weights="distance")
   clf.fit(train_set, Y)
   predictedTest = clf.predict(testX)
   print "knn - region"
   print clf.score(testX,testY)
-  
-  # clf = SVC(kernel='linear', C=2).fit(train_set, Y)
-  # predictedTest = clf.predict(testX)
-  # print "svc - region"
-  # print clf.score(testX,testY)
-
-  # ########
-  # ## Testing on room level (3 values)
-  # ########
-  # X, Y, testX, testY = generateSets(rawData,"region");
-  # train_set = np.array(X)
-  # clf = NearestCentroid();
-  # clf.fit(train_set, Y);
-  # print "region"
-  # print clf.score(testX,testY)
-  
-  # clf = KNeighborsClassifier(n_neighbors=60)  #, weights="distance")
-  # clf.fit(train_set, Y)
-  # predictedTest = clf.predict(testX)
-  # # correct = 0
-  # # total = 0
-  # print clf.score(testX,testY)
-
-  # clf = SVC(kernel='linear', C=2).fit(train_set, Y)
-  # predictedTest = clf.predict(testX)
-  # print "svc"
-  # print clf.score(testX,testY)
-  # print set(testY)
 
   correct = 0
   total = 0
   odd = 0
+  wrong_regions = []
   for i,pred in enumerate(predictedTest):
     total +=1;
     # print i
     if pred == testY[i]:
       correct +=1;
-    elif (pred[0:4] != testY[i][0:4]):
-      print pred,"|||" ,testY[i]
+    else:
+      wrong_regions.append((pred,testY[i]));
+      #print pred,"|||" ,testY[i]
   print "correct: ",correct, "total: ",total
+  print "wrong: ", total-correct;
+
+  print "wrong values based on region"
+  percentages = [];
+  for region, true_region in set(wrong_regions):
+    count = wrong_regions.count((region, true_region));
+    if (count > 2):
+      percentages.append(((region, true_region), count)) #/testY.count(true_region)));
+
+  percentages.sort(key=lambda x: x[1], reverse=True);
+  print percentages
+
+  clf = SVC(kernel='linear', C=2).fit(train_set, Y)
+  predictedTest = clf.predict(testX)
+  print "svc - region"
+  print clf.score(testX,testY)
+
+  ########
+  ## Testing on room level (3 values)
+  ########
+  X, Y, testX, testY = generateSets(rawData,"room");
+  train_set = np.array(X)
+  # clf = NearestCentroid();
+  # clf.fit(train_set, Y);
+  # print clf.score(testX,testY)
+  
+  clf = KNeighborsClassifier(n_neighbors=12, weights="distance")
+  clf.fit(train_set, Y)
+  predictedTest = clf.predict(testX)
+  print "knn - room"
+  print clf.score(testX,testY)
+
+  clf = SVC(kernel='linear', C=2).fit(train_set, Y)
+  predictedTest = clf.predict(testX)
+  print "svc - room"
+  print clf.score(testX,testY)
+
+  # correct = 0
+  # odd = 0;
+  # previous_room = "";
+  # for i, point in enumerate(testX):
+  #   current_room = clf.predict([point])[0];
+  #   if (previous_room == ""):
+  #     previous_room = current_room;
+  #   else:
+  #     if (((previous_room[0:4] == '5302') and  (current_room[0:4] == '5304')) or
+  #         ((previous_room[0:4] == '5304') and  (current_room[0:4] == '5302'))):
+  #       #print previous_room, testY[i]; 
+  #       #continue;
+  #     else:
+  #       previous_room = current_room 
+
+  #   if (previous_room == testY[i]):
+  #     correct += 1;
+  #   print previous_room, testY[i];
+  # print correct;
+
 if __name__ == '__main__':
   main()
