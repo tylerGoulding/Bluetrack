@@ -57,8 +57,9 @@ def generateSets(dataDict, granularity = "region",room = ""):
             minRSSI = min(nodeRSSI);
             maxRSSI = max(nodeRSSI);
             var     = np.var(nodeRSSI);
-            mode    = stats.mode(np.array(nodeRSSI));      
-            feat += [mean, minRSSI, maxRSSI, var, int(mode[0])];
+            mode    = stats.mode(np.array(nodeRSSI)); 
+            median = np.median(nodeRSSI);     
+            feat += [mean, median] #, minRSSI, maxRSSI] #, int(mode[0])];
         # print len(feat) # should be 30 features long
         # print feat
         if (i < 50):
@@ -76,8 +77,8 @@ def main():
   rawData = {}
   for filename in os.listdir(dirname):
     root, ext = os.path.splitext(filename)
-    if (filename == "5302_middle_3.txt"): 
-      continue
+    # if (filename == "5302_middle_3.txt"): 
+    #   continue
     file = dirname + filename
     # Y.append(root);
     features = [];
@@ -96,64 +97,57 @@ def main():
   ## Testing on all 11 regions
   ########
   X, Y, testX, testY = generateSets(rawData);
-  print len(X)
   train_set = np.array(X)
   # print train_set
-  print train_set.shape
   # clf = MLPClassifier(solver='lbfgs', alpha=1e-5,hidden_layer_sizes=(11,4), random_state=1)
   
   clf = NearestCentroid();
   clf.fit(train_set, Y);
   print clf.score(testX,testY)
-  
+
   clf = KNeighborsClassifier(n_neighbors=60, weights="distance")
   clf.fit(train_set, Y)
   predictedTest = clf.predict(testX)
-  correct = 0
-  total = 0
+  print "knn - region"
   print clf.score(testX,testY)
   
-  clf = SVC(kernel='linear', C=2).fit(train_set, Y)
-  print "svc - region"
-  print clf.score(testX,testY)
+  # clf = SVC(kernel='linear', C=2).fit(train_set, Y)
+  # predictedTest = clf.predict(testX)
+  # print "svc - region"
+  # print clf.score(testX,testY)
 
-
-
-  ########
-  ## Testing on room level (3 values)
-  ########
-  X, Y, testX, testY = generateSets(rawData,"region");
-  print len(X)
-  train_set = np.array(X)
-  # print train_set
-  print train_set.shape
-  clf = NearestCentroid();
-  clf.fit(train_set, Y);
-  print clf.score(testX,testY)
+  # ########
+  # ## Testing on room level (3 values)
+  # ########
+  # X, Y, testX, testY = generateSets(rawData,"region");
+  # train_set = np.array(X)
+  # clf = NearestCentroid();
+  # clf.fit(train_set, Y);
+  # print "region"
+  # print clf.score(testX,testY)
   
-  clf = KNeighborsClassifier(n_neighbors=60)  #, weights="distance")
-  clf.fit(train_set, Y)
-  predictedTest = clf.predict(testX)
-  # correct = 0
-  # total = 0
-  print clf.score(testX,testY)
+  # clf = KNeighborsClassifier(n_neighbors=60)  #, weights="distance")
+  # clf.fit(train_set, Y)
+  # predictedTest = clf.predict(testX)
+  # # correct = 0
+  # # total = 0
+  # print clf.score(testX,testY)
 
-  clf = SVC(kernel='linear', C=2).fit(train_set, Y)
-  print "svc"
-  print clf.score(testX,testY)
-  print set(testY)
+  # clf = SVC(kernel='linear', C=2).fit(train_set, Y)
+  # predictedTest = clf.predict(testX)
+  # print "svc"
+  # print clf.score(testX,testY)
+  # print set(testY)
 
   correct = 0
   total = 0
-  print len(testX)
-  print len(predictedTest)
-  print len(testY)
+  odd = 0
   for i,pred in enumerate(predictedTest):
     total +=1;
     # print i
     if pred == testY[i]:
       correct +=1;
-    else:
+    elif (pred[0:4] != testY[i][0:4]):
       print pred,"|||" ,testY[i]
   print "correct: ",correct, "total: ",total
 if __name__ == '__main__':
