@@ -70,11 +70,12 @@ def generateSets(dataDict, type = "region"):
       
       
 def main():
+  global X,Y,testX,testRoots
   rawData = {}
   for filename in os.listdir(dirname):
-    global X,Y,testX,testRoots
     root, ext = os.path.splitext(filename)
-    file = dirname_tyler + filename
+    if (filename == "5302_middle_3.txt"): continue
+    file = dirname + filename
     # Y.append(root);
     features = [];
     room_level_Y = [];
@@ -116,7 +117,7 @@ def main():
   ########
   ## Testing on room level (3 values)
   ########
-  X, Y, testX, testY = generateSets(rawData,"room");
+  X, Y, testX, testY = generateSets(rawData,"region");
   print len(X)
   train_set = np.array(X)
   # print train_set
@@ -132,37 +133,23 @@ def main():
   # total = 0
   print clf.score(testX,testY)
 
-  clf = SVC(kernel='linear', C=1).fit(train_set, Y)
+  clf = SVC(kernel='linear', C=2).fit(train_set, Y)
   print "svc"
   print clf.score(testX,testY)
   print set(testY)
-  print set(testX)
 
-  # print len(testX)
-  # print len(predictedTest)
-  # print len(testRoots)
-  # for i,pred in enumerate(predictedTest):
-    # total +=1;
+  correct = 0
+  total = 0
+  print len(testX)
+  print len(predictedTest)
+  print len(testY)
+  for i,pred in enumerate(predictedTest):
+    total +=1;
     # print i
-    # if pred == testRoots[i]:
-      # correct +=1;
-  # print "correct: ",correct, "total: ",total
-  # clf = NearestCentroid()
-  # clf.fit(train_set, Y)
-
-  # predictedTest = clf.predict(testX)
-  # correct = 0
-  # total = 0
-  # print len(testX)
-  # print len(predictedTest)
-  # print len(testRoots)
-  # for i,pred in enumerate(predictedTest):
-  #   total +=1;
-  #   # print i
-  #   if pred == testRoots[i]:
-  #     correct +=1;
-  #   else:
-  #     print pred,"|||" ,testRoots[i]
-  # print "correct: ",correct, "total: ",total
+    if pred == testY[i]:
+      correct +=1;
+    else:
+      print pred,"|||" ,testY[i]
+  print "correct: ",correct, "total: ",total
 if __name__ == '__main__':
   main()
