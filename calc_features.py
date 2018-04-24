@@ -32,7 +32,7 @@ testRoots =[]
 valid_types = ['region','room','region_given_room']
 valid_rooms = ['5300','5302','5304']
   
-def generateSets(dataDict, granularity = "region",ignore_node=-1, room = ""):
+def generateSets(dataDict, granularity = "region", ignore_node = -1, room = ""):
 
   if granularity not in valid_types:
     return -1;
@@ -72,6 +72,7 @@ def generateSets(dataDict, granularity = "region",ignore_node=-1, room = ""):
           testX.append(feat);
           testY.append(data_pos);
           testY_full.append(position);
+
   return trainX, trainY, testX, testY,testY_full
 
 def generate_room_specific_classifiers(dataDict):
@@ -96,6 +97,9 @@ def generate_room_specific_classifiers(dataDict):
 
   return clf5300,clf5302,clf5304
 
+
+def generate_room_off_classifiers(dataDict):
+  return;
       
 def main():
   global X,Y,testX,testRoots
@@ -104,8 +108,6 @@ def main():
   for filename in os.listdir(dirname):
     root, ext = os.path.splitext(filename)
     regions.append(root);
-    # if (filename == "5302_middle_3.txt"): 
-    #   continue
     file = dirname + filename
     features = [];
     room_level_Y = [];
@@ -120,8 +122,8 @@ def main():
           raw_list = [x[1] for x in parts];
           rawData[root].append(raw_list)     
 
-
   clf5300,clf5302,clf5304 = generate_room_specific_classifiers(rawData);   
+
   ########
   ## Testing on all 11 regions
   ########
@@ -142,12 +144,12 @@ def main():
   wrong_regions = []
   for i,pred in enumerate(predictedTest):
     total +=1;
-    # print i
     if pred == testY[i]:
       correct +=1;
     else:
       wrong_regions.append((pred,testY[i]));
-      #print pred,"|||" ,testY[i]
+
+
   print "correct: ",correct, "total: ",total
   print "wrong: ", total-correct;
 
