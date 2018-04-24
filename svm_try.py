@@ -8,7 +8,6 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 
-
 Y = []
 X = []
 testX = []
@@ -65,7 +64,6 @@ print clf.score(testX, testroots);
 lda = LinearDiscriminantAnalysis()
 lda.fit(train_set, Y);
 print lda.score(testX, testroots);
-
 
 
 # correct = 0
