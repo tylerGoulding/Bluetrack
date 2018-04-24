@@ -32,7 +32,7 @@ testRoots =[]
 valid_types = ['region','room','region_given_room']
 valid_rooms = ['5300','5302','5304']
   
-def generateSets(dataDict, granularity = "region",room = ""):
+def generateSets(dataDict, granularity = "region", ignore_node = -1, room = ""):
 
   if granularity not in valid_types:
     return -1;
@@ -58,18 +58,21 @@ def generateSets(dataDict, granularity = "region",room = ""):
       feat = []
       if [] not in moment:
         for j, nodeRSSI in enumerate(moment):
-            mean    = np.mean(nodeRSSI);
+            if (j == ignore_node): 
+              continue;
+            mean = np.mean(nodeRSSI);
             median = np.median(nodeRSSI);
             minRSSI = min(nodeRSSI);
             maxRSSI = max(nodeRSSI); 
-            feat += [mean , median]
-        if (i < 60):
+            feat += [mean , median];
+        if (i < 50):
           trainX.append(feat);
           trainY.append(data_pos);
         else:
           testX.append(feat);
           testY.append(data_pos);
           testY_full.append(position);
+
   return trainX, trainY, testX, testY,testY_full
 
 def generate_room_specific_classifiers(dataDict):
@@ -94,6 +97,9 @@ def generate_room_specific_classifiers(dataDict):
 
   return clf5300,clf5302,clf5304
 
+
+def generate_room_off_classifiers(dataDict):
+  return;
       
 def main():
   global X,Y,testX,testRoots
@@ -120,11 +126,12 @@ def main():
 
 
   clf5300,clf5302,clf5304 = generate_room_specific_classifiers(rawData);   
+
   ########
   ## Testing on all 11 regions
   ########
 
-  X, Y, testX, testY = generateSets(rawData);
+  X, Y, testX, testY,_ = generateSets(rawData);
   train_set = np.array(X)
   # print train_set
   # clf = MLPClassifier(solver='lbfgs', alpha=1e-5,hidden_layer_sizes=(11,4), random_state=1)
@@ -140,12 +147,12 @@ def main():
   wrong_regions = []
   for i,pred in enumerate(predictedTest):
     total +=1;
-    # print i
     if pred == testY[i]:
       correct +=1;
     else:
       wrong_regions.append((pred,testY[i]));
-      #print pred,"|||" ,testY[i]
+
+
   print "correct: ",correct, "total: ",total
   print "wrong: ", total-correct;
 
@@ -167,7 +174,7 @@ def main():
   ########
   ## Testing on room level (3 values)
   ########
-  X, Y, testX, testY = generateSets(rawData,"room");
+  X, Y, testX, testY, testY_full = generateSets(rawData,"room");
   train_set = np.array(X)
   # clf = NearestCentroid();
   # clf.fit(train_set, Y);
