@@ -17,7 +17,7 @@ X = []
 testX = []
 testRoots =[]
 dirname_tyler = "/Users/Tyler/Documents/GitHub/Bluetrack/data3/"
-dirname_fatema = "C:\\Users\\Fatema Almeshqab\\Desktop\\Bluetrack\\data\\"
+dirname_fatema = "C:\\Users\\Fatema Almeshqab\\Desktop\\Bluetrack\\data3\\"
 
 if platform.system() == 'Darwin':
   dirname = dirname_tyler
@@ -27,6 +27,8 @@ else:
 valid_types = ['region','room','region_given_room']
   
 def generateSets(dataDict, type = "region"):
+  if type not in valid_types:
+    return -1;
   trainX = []
   trainY = []
   testX  = []
