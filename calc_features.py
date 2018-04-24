@@ -13,7 +13,6 @@ import ast
 from sklearn.svm import SVC
 from collections import Counter 
 
-
 #### facilitate programming between Project Memebers
 dirname_tyler = "/Users/Tyler/Documents/GitHub/Bluetrack/data3/"
 dirname_fatema = "C:\\Users\\Fatema Almeshqab\\Desktop\\Bluetrack\\data3\\"
@@ -29,14 +28,14 @@ testX = []
 testRoots =[]
 
 # Validity checks
-valid_types = ['region','room','region_given_room']
+valid_types = ['region','room']
 valid_rooms = ['5300','5302','5304']
   
-def generateSets(dataDict, granularity = "region", ignore_node = -1, room = ""):
+def generateSets(dataDict, granularity = "region", ignore_node = -1):
 
   if granularity not in valid_types:
     return -1;
-  if (granularity == 'region_given_room') and room not in valid_rooms:
+  if ignore_node > 5:
     return -1;
   trainX = []
   trainY = []
@@ -98,8 +97,14 @@ def generate_room_specific_classifiers(dataDict):
   return clf5300,clf5302,clf5304
 
 
-def generate_room_off_classifiers(dataDict):
-  return;
+def generate_node_off_classifiers(dataDict):
+  off_classifiers = []
+  for node in xrange(6):
+    X, Y, testX, testY,_ = generateSets(dataDict,'region',node);
+    train_set = np.array(X)
+    clf = KNeighborsClassifier(n_neighbors=60, weights="distance").fit(train_set, Y); #SVC(kernel='linear', C=2).fit(train_set, Y)
+    off_classifiers.append((clf,testX,testY));
+  return off_classifiers;
       
 def main():
   global X,Y,testX,testRoots
@@ -174,8 +179,8 @@ def main():
   X, Y, testX, testY, testY_full = generateSets(rawData,"room");
   train_set = np.array(X)
 
-  clf = SVC(kernel='linear', C=2).fit(train_set, Y)
-  predictedTest = clf.predict(testX)
+  clf_room = SVC(kernel='linear', C=2).fit(train_set, Y)
+  predictedTest = clf_room.predict(testX)
   print "svc - room"
   print clf.score(testX,testY)
 
@@ -192,12 +197,9 @@ def main():
   total5304 = 0
   for event,result in zip(testX,testY_full):
     event = [event]
-    room = clf.predict(event)[0];
-    # print room
+    room = clf_room.predict(event)[0];
     if room == "5300":
       pred = clf5300.predict(event);
-      # print pred
-      # print result
       if pred == result:
         correct5300 +=1;
       total5300 +=1;
@@ -211,7 +213,6 @@ def main():
       if pred == result:
         correct5304 +=1;
       total5304 +=1;
-
   print "---------------"
   print "5300"
   print "correct: ",correct5300, "total: ",total5300
@@ -224,7 +225,6 @@ def main():
   print "5304"
   print "correct: ",correct5304, "total: ",total5304
   print "accuracy: ", correct5304*100/float(total5304)
-
   # correct = 0
   # total = 0
   # print len(testX)
@@ -238,5 +238,13 @@ def main():
   #   else:
   #     print pred,"|||" ,testY[i]
   # print "correct: ",correct, "total: ",total
+  print ""
+  node_off_list = generate_node_off_classifiers(rawData);
+  # print node_off_list
+  for i,values in enumerate(node_off_list):
+    clf,testX,testY = values[:];
+    print "Turning off node:", i;
+    print clf.score(testX,testY)
+
 if __name__ == '__main__':
   main()
