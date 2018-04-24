@@ -10,6 +10,7 @@ import platform
 import re
 from scipy import stats
 import ast
+from sklearn.svm import SVC
 mac_list = ["b8:27:eb:b6:43:f8", "b8:27:eb:d3:4c:7f","b8:27:eb:cd:4b:81","b8:27:eb:ee:32:b8","b8:27:eb:e7:50:37","b8:27:eb:63:a1:e3"]
 Y = []
 X = []
@@ -58,10 +59,10 @@ def generateSets(dataDict, type = "region"):
         # print feat
         if (i < 50):
           trainX.append(feat);
-          trainY.append(position);
+          trainY.append(data_pos);
         else:
           testX.append(feat);
-          testY.append(position);
+          testY.append(data_pos);
 
   return trainX, trainY, testX, testY
       
@@ -126,6 +127,32 @@ def main():
   correct = 0
   total = 0
   print clf.score(testX,testY)
+  clf = SVC(kernel='linear', C=1).fit(train_set, Y)
+  print "svc - region"
+  print clf.score(testX,testY)
+
+  X, Y, testX, testY = generateSets(rawData,"room");
+  print len(X)
+  train_set = np.array(X)
+  # print train_set
+  print train_set.shape
+  # clf = MLPClassifier(solver='lbfgs', alpha=1e-5,hidden_layer_sizes=(11,4), random_state=1)
+  clf = NearestCentroid();
+  clf.fit(train_set, Y);
+  print clf.score(testX,testY)
+  
+  clf = KNeighborsClassifier(n_neighbors=60)#, weights="distance")
+  clf.fit(train_set, Y)
+  predictedTest = clf.predict(testX)
+  # correct = 0
+  # total = 0
+  print clf.score(testX,testY)
+
+  clf = SVC(kernel='linear', C=1).fit(train_set, Y)
+  print "svc"
+  print clf.score(testX,testY)
+  print set(testY)
+
   # print len(testX)
   # print len(predictedTest)
   # print len(testRoots)
