@@ -70,15 +70,15 @@ def main():
         timestamp,rssi_values = process_buffer(data)
         current_room = "";
 
-        for val in xrange(rssi_values):
-            if (rssi_values[val] == -150):
-                if (node_off_count[val/2] > 5):
-                    node_off = val/2;
+        for val in xrange(rssi_values/2):
+            if (rssi_values[val*2] == -150):
+                if (node_off_count[val] > 3):
+                    node_off = val;
                     break;
                 else:
-                    node_off_count[val/2] += 1; 
+                    node_off_count[val] += 1; 
             else:
-                node_off_count[val/2] = 0;
+                node_off_count[val] = 0;
 
         # check if one of the nodes is off, -150 for over 10 seconds?
         # choose the correct clf
