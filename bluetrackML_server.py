@@ -24,6 +24,13 @@ def main():
     clf5300 = joblib.load('knn_region_given_5300.pkl');
     clf5302 = joblib.load('knn_region_given_5302.pkl'); 
     clf5304 = joblib.load('knn_region_given_5304.pkl'); 
+    clf_n0_off = joblib.load('knn_region_node_0_off.pkl')
+    clf_n1_off = joblib.load('knn_region_node_1_off.pkl')
+    clf_n2_off = joblib.load('knn_region_node_2_off.pkl')
+    clf_n3_off = joblib.load('knn_region_node_3_off.pkl')
+    clf_n4_off = joblib.load('knn_region_node_4_off.pkl')
+    clf_n5_off = joblib.load('knn_region_node_5_off.pkl')
+    
     HOST = ''
     PORT = 8000              # Arbitrary non-privileged port
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
