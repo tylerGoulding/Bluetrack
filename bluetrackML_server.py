@@ -79,6 +79,7 @@ def main():
                     node_off_count[val] += 1; 
             else:
                 node_off_count[val] = 0;
+                node_off = -1; 
 
         # check if one of the nodes is off, -150 for over 10 seconds?
         # choose the correct clf
