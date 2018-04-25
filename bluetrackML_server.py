@@ -8,6 +8,16 @@ import os
 from sklearn.neighbors.nearest_centroid import NearestCentroid
 from sklearn.externals import joblib
 
+class bcolors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+
 def process_buffer(buffer):
   timestamp = []
   rssi_values = []
@@ -15,7 +25,7 @@ def process_buffer(buffer):
   for line in f:
     data = (line.strip()).split(',')
     timestamp.append(data[0])
-    rssi_values.append(map(int,data[1:]))
+    rssi_values.append(map(float,data[1:]))
   return timestamp, rssi_values
 
 def main():
@@ -70,7 +80,7 @@ def main():
         timestamp,rssi_values = process_buffer(data)
         current_room = "";
 
-        for val in xrange(rssi_values/2):
+        for val in xrange((len(rssi_values)/2)):
             if (rssi_values[val*2] == -150):
                 if (node_off_count[val] > 3):
                     node_off = val;
@@ -116,6 +126,7 @@ def main():
         else:
             if (current_room.startswith(blacklist_dict[previous_room]) and (blacklist_count < 4)):
                 blacklist_count += 1; 
+                print bcolors.FAIL +  "blacklisting: " + current_room + bcolors.ENDC
                 # do nothing
                 continue;
             else:
@@ -125,7 +136,7 @@ def main():
         pred[i] = (previous_room)
         i = (i+1)%3
         print pred, previous_room
-        print max(pred, key=pred.count)
+        print bcolors.WARNING + max(pred, key=pred.count) + bcolors.ENDC
 
 
 if __name__ == '__main__':

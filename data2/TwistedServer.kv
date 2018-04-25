@@ -1,0 +1,28 @@
+#:kivy 1.0.9
+
+
+<floor>:  
+    canvas:
+        Color:  
+            rgba: 1, 2, .8, .5
+        Rectangle:
+            canvas:
+            pos: self.offset5300[0] - 98,self.offset5300[1]
+            size: self.width5300 + 98, self.height5300
+        Rectangle:
+            pos: self.offset5302[0],self.offset5302[1]- self.wall_width
+            size: self.width5302, self.height5302
+        Rectangle:
+            pos: self.offset5304[0] ,self.offset5304[1]- self.wall_width
+            size: self.width5304, self.height5304
+    Label:
+        font_size: 30  
+        center_x: root.width / 4
+        top: root.top - 50
+        text: "5300 Corridor"
+        
+    Label:
+        font_size: 30  
+        center_x: root.offset5304[0] + root.width5304/2
+        top: root.offset5304[1] + root.height5304/2
+        text: str( root.name.text)

@@ -110,7 +110,7 @@ def generateSets(dataDict, granularity = "region", ignore_node = -1):
           minRSSI = min(nodeRSSI);
           maxRSSI = max(nodeRSSI); 
           feat += [mean , median]
-        if (i < 50):
+        if (i < 60):
           trainX.append(feat);
           trainY.append(data_pos);
         else:
@@ -159,6 +159,8 @@ def main():
   regions = [];
   for filename in os.listdir(dirname):
     root, ext = os.path.splitext(filename)
+    if "middle_3" in root:
+      continue;
     regions.append(root);
     file = dirname + filename
     features = [];
