@@ -63,19 +63,52 @@ def main():
     previous_room = "";
     i = 0
     blacklist_count = 0;
+    node_off = -1;
+    node_off_count = [0, 0, 0, 0, 0, 0];
     while (1): 
         data = conn.recv(1024)
         timestamp,rssi_values = process_buffer(data)
+        current_room = "";
+
+        for val in xrange(rssi_values):
+            if (rssi_values[val] == -150):
+                if (node_off_count[val/2] > 5):
+                    node_off = val/2;
+                    break;
+                else:
+                    node_off_count[val/2] += 1; 
+            else:
+                node_off_count[val/2] = 0;
+
         # check if one of the nodes is off, -150 for over 10 seconds?
         # choose the correct clf
         #current_room = clf_room.predict(rssi_values)[0]
-        room = clf_room.predict(rssi_values)[0];
-        if room == "5300":
-          current_room = clf5300.predict(rssi_values)[0];
-        elif room == "5302":
-          current_room =clf5302.predict(rssi_values)[0];
-        elif room == "5304":
-          current_room = clf5304.predict(rssi_values)[0];
+        if (node_off == -1):
+            room = clf_room.predict(rssi_values)[0];
+            if room == "5300":
+              current_room = clf5300.predict(rssi_values)[0];
+            elif room == "5302":
+              current_room =clf5302.predict(rssi_values)[0];
+            elif room == "5304":
+              current_room = clf5304.predict(rssi_values)[0];
+
+        elif (node_off == 0):
+            current_room = clf_n0_off.predict(rssi_values)[0];
+
+        elif (node_off == 1):
+            current_room = clf_n1_off.predict(rssi_values)[0];
+
+        elif (node_off == 2):
+            current_room = clf_n2_off.predict(rssi_values)[0];
+
+        elif (node_off == 3):
+            current_room = clf_n3_off.predict(rssi_values)[0];
+
+        elif (node_off == 4):
+            current_room = clf_n4_off.predict(rssi_values)[0];
+
+        elif (node_off == 5):
+            current_room = clf_n5_off.predict(rssi_values)[0];
 
         if (previous_room == ""):
             previous_room = current_room;
@@ -90,8 +123,7 @@ def main():
 
         pred[i] = (previous_room)
         i = (i+1)%3
-        print pred
-        print previous_room
+        print pred, previous_room
         print max(pred, key=pred.count)
 
 
