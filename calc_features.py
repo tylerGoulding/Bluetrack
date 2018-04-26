@@ -14,8 +14,8 @@ from sklearn.svm import SVC
 from collections import Counter 
 
 #### facilitate programming between Project Memebers
-dirname_tyler = "/Users/Tyler/Documents/GitHub/Bluetrack/data3/"
-dirname_fatema = "C:\\Users\\Fatema Almeshqab\\Desktop\\Bluetrack\\data3\\"
+dirname_tyler = "/Users/Tyler/Documents/GitHub/Bluetrack/data4/"
+dirname_fatema = "C:\\Users\\Fatema Almeshqab\\Desktop\\Bluetrack\\data4\\"
 if platform.system() == 'Darwin':
   dirname = dirname_tyler
 else:
@@ -110,7 +110,7 @@ def generateSets(dataDict, granularity = "region", ignore_node = -1):
           minRSSI = min(nodeRSSI);
           maxRSSI = max(nodeRSSI); 
           feat += [mean , median]
-        if (i < 60):
+        if (i < 40):
           trainX.append(feat);
           trainY.append(data_pos);
         else:
@@ -159,7 +159,7 @@ def main():
   regions = [];
   for filename in os.listdir(dirname):
     root, ext = os.path.splitext(filename)
-    if "middle_3" in root:
+    if "middle_5" in root:
       continue;
     regions.append(root);
     file = dirname + filename
