@@ -74,14 +74,33 @@ class layout5300(Widget):
     # pass
 
 class TwistedServerApp(App):
-    root = None
-    flor = None
+    wall_width = 8.00
+
+    window_height = Window.height
+    window_width = Window.width
+    increment = Window.height/700.
+    offset5300 = 150, window_height - 150
+    height5300 = increment*96
+    width5300 = increment*900
+
+    width5302 = increment*230
+    height5302  = increment*325
+    offset5302 = offset5300[0], offset5300[1] - height5302
+
+    
+    width5304 = increment*251
+    height5304  = increment*300
+    offset5304 = (offset5300[0] + width5302 + wall_width), offset5300[1] - height5304
 
     def build(self):
         root = FloatLayout(padding=10)
+        with root:
+            Color(1, 1, 1)
+            Rectangle(pos= [self.offset5300[0] - 98,self.offset5300[1]], size = [self.width5300 + 98, self.height5300])
+
         reactor.listenTCP(8000, EchoServerFactory(self))
-        flor = floor()
-        root.add_widget(flor);
+        # flor = floor()
+        # root.add_widget(flor);
         return root
 
     def handle_message(self, msg):
