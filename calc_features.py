@@ -15,7 +15,7 @@ from collections import Counter
 
 #### facilitate programming between Project Memebers
 dirname_tyler = "/Users/Tyler/Documents/GitHub/Bluetrack/data4/"
-dirname_fatema = "C:\\Users\\Fatema Almeshqab\\Desktop\\Bluetrack\\data4\\"
+dirname_fatema = "C:\\Users\\Fatema Almeshqab\\Desktop\\Bluetrack\\"
 if platform.system() == 'Darwin':
   dirname = dirname_tyler
 else:
@@ -65,7 +65,7 @@ def generateSets_blah(dataDict, granularity = "region", ignore_node = -1):
             minRSSI = min(nodeRSSI);
             maxRSSI = max(nodeRSSI); 
             feat += [mean , median];
-        if (i < 50):
+        if (i < 100):
           trainX.append(feat);
           trainY.append(data_pos);
         else:
@@ -110,7 +110,7 @@ def generateSets(dataDict, granularity = "region", ignore_node = -1):
           minRSSI = min(nodeRSSI);
           maxRSSI = max(nodeRSSI); 
           feat += [mean , median]
-        if (i < 40):
+        if (i < 100):
           trainX.append(feat);
           trainY.append(data_pos);
         else:
@@ -157,29 +157,37 @@ def main():
   global X,Y,testX,testRoots
   rawData = {}
   regions = [];
-  for filename in os.listdir(dirname):
-    root, ext = os.path.splitext(filename)
-    if "middle_5" in root:
-      continue;
-    regions.append(root);
-    file = dirname + filename
-    features = [];
-    room_level_Y = [];
-    rawData[root] = [];
-    with open(file) as f:
-      for line in f.readlines():
-        if line[0].isdigit():   
-          continue;       
-        else:
-          parts = ast.literal_eval(line)
-          parts.sort(key=lambda x: mac_list.index(x[0]))
-          raw_list = [x[1] for x in parts];
-          rawData[root].append(raw_list)     
+  data_folders = ["data3\\", "data4\\"];
+  for folder in data_folders:
+    new_dirname = dirname + folder;
+    for filename in os.listdir(new_dirname):
+      root, ext = os.path.splitext(filename)
+      # if "middle_5" in root:
+      #   continue;
+      root = root[:-2];
+      if root not in regions:
+        regions.append(root);
+
+      file = new_dirname + filename
+      features = [];
+      room_level_Y = [];
+      if root not in rawData:
+        rawData[root] = [];
+
+      with open(file) as f:
+        for line in f.readlines():
+          if line[0].isdigit():   
+            continue;       
+          else:
+            parts = ast.literal_eval(line)
+            parts.sort(key=lambda x: mac_list.index(x[0]))
+            raw_list = [x[1] for x in parts];
+            rawData[root].append(raw_list)     
 
   clf5300,clf5302,clf5304 = generate_room_specific_classifiers(rawData);   
-  joblib.dump(clf5300, 'knn_region_given_5300.pkl') 
-  joblib.dump(clf5302, 'knn_region_given_5302.pkl') 
-  joblib.dump(clf5304, 'knn_region_given_5304.pkl') 
+  joblib.dump(clf5300, 'knn_region_given_5300_all.pkl') 
+  joblib.dump(clf5302, 'knn_region_given_5302_all.pkl') 
+  joblib.dump(clf5304, 'knn_region_given_5304_all.pkl') 
 
   ########
   ## Testing on all 11 regions
@@ -191,7 +199,7 @@ def main():
   # clf = MLPClassifier(solver='lbfgs', alpha=1e-5,hidden_layer_sizes=(11,4), random_state=1)
   clf = KNeighborsClassifier(n_neighbors=60, weights="distance")
   clf.fit(train_set, Y)
-  joblib.dump(clf, 'knn_region.pkl') 
+  joblib.dump(clf, 'knn_region_all.pkl') 
 
   predictedTest = clf.predict(testX)
   print "knn - region"
@@ -222,10 +230,10 @@ def main():
   percentages.sort(key=lambda x: x[1], reverse=True);
   print percentages
 
-  clf = SVC(kernel='linear', C=2).fit(train_set, Y)
-  predictedTest = clf.predict(testX)
-  print "svc - region"
-  print clf.score(testX,testY)
+  # clf = SVC(kernel='linear', C=2).fit(train_set, Y)
+  # predictedTest = clf.predict(testX)
+  # print "svc - region"
+  # print clf.score(testX,testY)
 
   ########
   ## Testing on room level (3 values)
@@ -234,17 +242,18 @@ def main():
   train_set = np.array(X)
 
   clf_room = SVC(kernel='linear', C=2).fit(train_set, Y)
-  predictedTest = clf_room.predict(testX)
-  print "svc - room"
-  print clf.score(testX,testY)
+  # predictedTest = clf_room.predict(testX)
+  # print "svc - room"
+  # print clf.score(testX,testY_full)
 
   clf = KNeighborsClassifier(n_neighbors=12, weights="distance")
   clf.fit(train_set, Y)
-  joblib.dump(clf, 'knn_room.pkl') 
+  joblib.dump(clf, 'knn_room_all.pkl') 
 
   predictedTest = clf.predict(testX)
   print "knn - room"
   print clf.score(testX,testY)
+
   correct5300 = 0
   total5300 = 0
   correct5302 = 0
@@ -253,7 +262,7 @@ def main():
   total5304 = 0
   for event,result in zip(testX,testY_full):
     event = [event]
-    room = clf_room.predict(event)[0];
+    room = clf.predict(event)[0];
     if room == "5300":
       pred = clf5300.predict(event);
       if pred == result:
@@ -299,7 +308,7 @@ def main():
   # print node_off_list
   for i,values in enumerate(node_off_list):
     clf,testX,testY = values[:];
-    joblib.dump(clf, str.format('knn_region_node_{}_off.pkl',i)); 
+    joblib.dump(clf, str.format('knn_region_node_{}_off_all.pkl',i)); 
     print "Turning off node:", i;
     print clf.score(testX,testY)
 
@@ -307,31 +316,23 @@ def main():
   # print node_off_list
   for i,values in enumerate(node_off_list):
     clf,testX,testY = values[:];
-    joblib.dump(clf, str.format('knn_room_node_{}_off.pkl',i)); 
+    joblib.dump(clf, str.format('knn_room_node_{}_off_all.pkl',i)); 
     print "Turning off node:", i;
     print clf.score(testX,testY)
 
   for i in xrange(6):
     clf5300,clf5302,clf5304 = generate_room_specific_classifiers(rawData,i);   
-    joblib.dump(clf5300, str.format('knn_region_given_5300_node_{}_off.pkl',i)) 
-    joblib.dump(clf5302, str.format('knn_region_given_5302_node_{}_off.pkl',i)) 
-    joblib.dump(clf5304, str.format('knn_region_given_5304_node_{}_off.pkl',i)) 
+    joblib.dump(clf5300, str.format('knn_region_given_5300_node_{}_off_all.pkl',i)) 
+    joblib.dump(clf5302, str.format('knn_region_given_5302_node_{}_off_all.pkl',i)) 
+    joblib.dump(clf5304, str.format('knn_region_given_5304_node_{}_off_all.pkl',i)) 
 
   X, Y, testX, testY,_ = generateSets_blah(rawData,'room');
   train_set = np.array(X)
   test_setX = np.array(testX)
-
   test_setY = np.array(testY)
-
-  print train_set.shape
-
-  print test_setX.shape
-  print test_setY.shape
   clf_node0_node3_off = KNeighborsClassifier(n_neighbors=12, weights="distance").fit(train_set, Y); #SVC(kernel='linear', C=2).fit(train_set, Y)
-  # print testX[0]
   print clf_node0_node3_off.score(testX,testY)
-  joblib.dump(clf, 'knn_n0_n3_off.pkl') 
-
+  joblib.dump(clf, 'knn_n0_n3_off_all.pkl') 
 
 if __name__ == '__main__':
   main()

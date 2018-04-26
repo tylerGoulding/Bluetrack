@@ -56,18 +56,18 @@ def main():
     print "Accepted Connection:", addr
 
     blacklist_dict = {};
-    blacklist_dict['5302_upper_left_4'] = ('5304', '5300_middle','5300_upper', '5300_lower');
-    blacklist_dict['5302_upper_right_4'] = ('5304', '5300_middle','5300_upper', '5300_lower');
-    blacklist_dict['5302_lower_left_4'] = ('5304','5300_upper');
-    blacklist_dict['5302_lower_right_4'] = ('5304','5300_upper');
-    blacklist_dict['5302_middle_4'] = ('5304', '5300_middle','5300_upper');
-    blacklist_dict['5304_upper_left_4'] = ('5302', '5300_middle','5300_upper', '5300_lower');
-    blacklist_dict['5304_upper_right_4'] = ('5302', '5300_middle','5300_upper', '5300_lower');
-    blacklist_dict['5304_lower_left_4'] = ('5302', '5300_lower');
-    blacklist_dict['5304_lower_right_4'] = ('5302', '5300_lower');
-    blacklist_dict['5300_lower_4'] = ('5300_upper', '5304', '5302_upper_right', '5302_upper_left');
-    blacklist_dict['5300_middle_4'] = ('5304_upper_right', '5304_upper_left', '5302_upper_right', '5302_upper_left');
-    blacklist_dict['5300_upper_4'] = ('5300_lower', '5302', '5304_upper_right', '5304_upper_left');
+    blacklist_dict['5302_upper_left'] = ('5304', '5300_middle','5300_upper', '5300_lower');
+    blacklist_dict['5302_upper_right'] = ('5304', '5300_middle','5300_upper', '5300_lower');
+    blacklist_dict['5302_lower_left'] = ('5304','5300_upper');
+    blacklist_dict['5302_lower_right'] = ('5304','5300_upper');
+    blacklist_dict['5302_middle'] = ('5304', '5300_middle','5300_upper');
+    blacklist_dict['5304_upper_left'] = ('5302', '5300_middle','5300_upper', '5300_lower');
+    blacklist_dict['5304_upper_right'] = ('5302', '5300_middle','5300_upper', '5300_lower');
+    blacklist_dict['5304_lower_left'] = ('5302', '5300_lower');
+    blacklist_dict['5304_lower_right'] = ('5302', '5300_lower');
+    blacklist_dict['5300_lower'] = ('5300_upper', '5304', '5302_upper_right', '5302_upper_left');
+    blacklist_dict['5300_middle'] = ('5304_upper_right', '5304_upper_left', '5302_upper_right', '5302_upper_left');
+    blacklist_dict['5300_upper'] = ('5300_lower', '5302', '5304_upper_right', '5304_upper_left');
 
     pred = ["","",""]
     previous_room = "";
