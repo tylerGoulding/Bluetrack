@@ -239,6 +239,30 @@ def drawSpace(w):
     wean5304_positions[3] = w.create_rectangle(offset5304[0]+width5304/2, offset5304[1]+(height5304)/2, (offset5304[0]+(width5304)),
                                               (offset5304[1]+(height5304)) , fill='cornsilk2',outline='black')
 
+    legend_width = 220
+    legend_height = 160
+    legend_offset = 50
+    legend_box = w.create_rectangle(WINDOW_WIDTH-legend_width, WINDOW_HEIGHT-legend_height,
+                                    WINDOW_WIDTH-legend_offset, WINDOW_HEIGHT-50, fill='cornsilk2');
+
+    legend_offset_h = 30
+    legend_offset_w = 45
+    margin = 10;
+    user1_legend = w.create_rectangle(WINDOW_WIDTH-legend_width+margin, WINDOW_HEIGHT-legend_height+margin,
+                                      WINDOW_WIDTH-legend_width+legend_offset_w,  WINDOW_HEIGHT-legend_height+legend_offset_h, fill='red');
+
+    user1_txt = w.create_text(WINDOW_WIDTH-legend_height+margin,  WINDOW_HEIGHT-140, text="User 1")
+    
+    user2_legend = w.create_rectangle(WINDOW_WIDTH-legend_width+margin, WINDOW_HEIGHT-legend_height+margin+legend_offset_h,
+                                      WINDOW_WIDTH-legend_width+legend_offset_w,  WINDOW_HEIGHT-legend_height+2*legend_offset_h, fill='blue');
+    
+    user2_txt = w.create_text(WINDOW_WIDTH-legend_height+margin,  WINDOW_HEIGHT-110, text="User 2")
+
+    both_legend = w.create_rectangle(WINDOW_WIDTH-legend_width+margin, WINDOW_HEIGHT-legend_height+margin+2*legend_offset_h,
+                                    WINDOW_WIDTH-legend_width+legend_offset_w, WINDOW_HEIGHT-legend_height+3*legend_offset_h, fill='DarkOrchid4');
+
+    user2_txt = w.create_text(WINDOW_WIDTH-legend_height+margin,  WINDOW_HEIGHT-80, text="Both")
+
     positions = wean5300_positions + wean5302_positions + wean5304_positions;
 
          
@@ -286,7 +310,7 @@ def trackPerson(root):
     count = 0;
     user_num = 0;
     while (1): 
-        time.sleep(0.5);
+        time.sleep(0.25);
         count +=1;
         #receive data from server
         #call roomLocator instance
@@ -336,7 +360,6 @@ def trackPerson(root):
             user.current_region = random.choice(wean5302_names);
 
         #print user.number, user.current_region;
-
         user.clearPrevious(w);
         user.drawCurrent(w, user_colors);
 
