@@ -1,5 +1,5 @@
 from random import shuffle
-from sklearn import svm
+#from sklearn import svm
 import os
 import numpy as np
 from sklearn.neighbors.nearest_centroid import NearestCentroid
@@ -12,6 +12,7 @@ from scipy import stats
 import ast
 from sklearn.svm import SVC
 from collections import Counter 
+
 
 #### facilitate programming between Project Memebers
 dirname_tyler = "/Users/Tyler/Documents/GitHub/Bluetrack/"
@@ -157,7 +158,7 @@ def main():
   global X,Y,testX,testRoots
   rawData = {}
   regions = [];
-  data_folders = ["data3/"] #, "data4/"];
+  data_folders = ["data4/"] #, "data4/"];
   for folder in data_folders:
     new_dirname = dirname + folder;
     for filename in os.listdir(new_dirname):
@@ -185,12 +186,12 @@ def main():
             rawData[root].append(raw_list)     
 
   clf5300,clf5302,clf5304 = generate_room_specific_classifiers(rawData);   
-  joblib.dump(clf5300, 'knn_region_given_5300_distributed.pkl') 
-  joblib.dump(clf5302, 'knn_region_given_5302_distributed.pkl') 
-  joblib.dump(clf5304, 'knn_region_given_5304_distributed.pkl') 
+  joblib.dump(clf5300, 'knn_region_given_5300_centralized.pkl') 
+  joblib.dump(clf5302, 'knn_region_given_5302_centralized.pkl') 
+  joblib.dump(clf5304, 'knn_region_given_5304_centralized.pkl') 
 
   ########
-  ## Testing on all 11 regions
+  ## Testing on centralized 11 regions
   ########
 
   X, Y, testX, testY,_ = generateSets(rawData);
@@ -199,7 +200,7 @@ def main():
   # clf = MLPClassifier(solver='lbfgs', alpha=1e-5,hidden_layer_sizes=(11,4), random_state=1)
   clf = KNeighborsClassifier(n_neighbors=60, weights="distance")
   clf.fit(train_set, Y)
-  joblib.dump(clf, 'knn_region_distributed.pkl') 
+  joblib.dump(clf, 'knn_region_centralized.pkl') 
 
   predictedTest = clf.predict(testX)
   print "knn - region"
@@ -248,7 +249,7 @@ def main():
 
   clf = KNeighborsClassifier(n_neighbors=12, weights="distance")
   clf.fit(train_set, Y)
-  joblib.dump(clf, 'knn_room_distributed.pkl') 
+  joblib.dump(clf, 'knn_room_centralized.pkl') 
 
   predictedTest = clf.predict(testX)
   print "knn - room"
@@ -308,7 +309,7 @@ def main():
   # print node_off_list
   for i,values in enumerate(node_off_list):
     clf,testX,testY = values[:];
-    joblib.dump(clf, str.format('knn_region_node_{}_off_distributed.pkl',i)); 
+    joblib.dump(clf, str.format('knn_region_node_{}_off_centralized.pkl',i)); 
     print "Turning off node:", i;
     print clf.score(testX,testY)
 
@@ -316,15 +317,15 @@ def main():
   # print node_off_list
   for i,values in enumerate(node_off_list):
     clf,testX,testY = values[:];
-    joblib.dump(clf, str.format('knn_room_node_{}_off_distributed.pkl',i)); 
+    joblib.dump(clf, str.format('knn_room_node_{}_off_centralized.pkl',i)); 
     print "Turning off node:", i;
     print clf.score(testX,testY)
 
   for i in xrange(6):
     clf5300,clf5302,clf5304 = generate_room_specific_classifiers(rawData,i);   
-    joblib.dump(clf5300, str.format('knn_region_given_5300_node_{}_off_distributed.pkl',i)) 
-    joblib.dump(clf5302, str.format('knn_region_given_5302_node_{}_off_distributed.pkl',i)) 
-    joblib.dump(clf5304, str.format('knn_region_given_5304_node_{}_off_distributed.pkl',i)) 
+    joblib.dump(clf5300, str.format('knn_region_given_5300_node_{}_off_centralized.pkl',i)) 
+    joblib.dump(clf5302, str.format('knn_region_given_5302_node_{}_off_centralized.pkl',i)) 
+    joblib.dump(clf5304, str.format('knn_region_given_5304_node_{}_off_centralized.pkl',i)) 
 
   X, Y, testX, testY,_ = generateSets_blah(rawData,'room');
   train_set = np.array(X)
@@ -332,7 +333,7 @@ def main():
   test_setY = np.array(testY)
   clf_node0_node3_off = KNeighborsClassifier(n_neighbors=12, weights="distance").fit(train_set, Y); #SVC(kernel='linear', C=2).fit(train_set, Y)
   print clf_node0_node3_off.score(testX,testY)
-  joblib.dump(clf, 'knn_n0_n3_off_distributed.pkl') 
+  joblib.dump(clf, 'knn_n0_n3_off_centralized.pkl') 
 
 if __name__ == '__main__':
   main()
