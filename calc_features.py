@@ -15,7 +15,7 @@ from collections import Counter
 
 KNN_POSSIBLE_VERSIONS = ["all","distributed","centralized"]
 
-KNN_VERSION = "centralized"
+KNN_VERSION = "all"
 
 
 #### facilitate programming between Project Memebers
@@ -70,7 +70,7 @@ def generateSets_blah(dataDict, granularity = "region", ignore_node = -1):
             minRSSI = min(nodeRSSI);
             maxRSSI = max(nodeRSSI); 
             feat += [mean , median];
-        if (i < len(data)-1):
+        if (i < 100):
           trainX.append(feat);
           trainY.append(data_pos);
         else:
@@ -115,7 +115,7 @@ def generateSets(dataDict, granularity = "region", ignore_node = -1):
           minRSSI = min(nodeRSSI);
           maxRSSI = max(nodeRSSI); 
           feat += [mean , median]
-        if (i < len(data)-1):
+        if (i < 100):
           trainX.append(feat);
           trainY.append(data_pos);
         else:
