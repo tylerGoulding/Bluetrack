@@ -70,7 +70,7 @@ def generateSets_n0_n3_off(dataDict, granularity = "region", ignore_node = -1):
             minRSSI = min(nodeRSSI);
             maxRSSI = max(nodeRSSI); 
             feat += [mean , median];
-        if (i < len(data)-1):
+        if (i < 100):
           trainX.append(feat);
           trainY.append(data_pos);
         else:
@@ -119,6 +119,7 @@ def generateSets(dataDict, granularity = "region", ignore_node = -1):
           maxRSSI = max(nodeRSSI); 
           feat += [mean , median]
         if (i < 100):#len(data)-1):
+        # if (i < 100):
           trainX.append(feat);
           trainY.append(data_pos);
         else:

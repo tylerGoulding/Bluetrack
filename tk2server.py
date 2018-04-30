@@ -306,9 +306,7 @@ class User():
 
     def addPath(self):
         path_q.append(self.current_region);
-
-
-
+        
         # if (self.current_region != self.previous_region):
             # self.path.append(self.current_region);
 
@@ -354,7 +352,7 @@ def drawSpace(w):
                                   offset5304[1]+height5304,fill='cornsilk2')
 
     wean5300_positions[0] = w.create_rectangle(offset5300[0], offset5300[1], (offset5300[0]+(width5300/3)),
-                                              (offset5300[1]+(height5300)) , fill='black', outline='black', stipple="gray12")
+                                              (offset5300[1]+(height5300)) , fill='cornsilk2', outline='black')
     wean5300_positions[1] = w.create_rectangle((offset5300[0]+width5300/3), offset5300[1], (offset5300[0]+(2*width5300/3)),
                                               (offset5300[1]+(height5300)) , fill='cornsilk2', outline='black')
     wean5300_positions[2] = w.create_rectangle((offset5300[0]+2*width5300/3), offset5300[1],  (offset5300[0]+(width5300)),
