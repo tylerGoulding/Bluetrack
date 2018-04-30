@@ -15,7 +15,7 @@ from collections import Counter
 
 KNN_POSSIBLE_VERSIONS = ["all","distributed","centralized"]
 
-KNN_VERSION = "centralized"
+KNN_VERSION = "all"
 
 
 #### facilitate programming between Project Memebers
@@ -33,10 +33,10 @@ testX = []
 testRoots =[]
 
 # Validity checks
-valid_types = ['region','room']
+valid_types = ['region','room','UL','LR']
 valid_rooms = ['5300','5302','5304']
   
-def generateSets_blah(dataDict, granularity = "region", ignore_node = -1):
+def generateSets_n0_n3_off(dataDict, granularity = "region", ignore_node = -1):
 
   if granularity not in valid_types:
     return -1;
@@ -80,14 +80,9 @@ def generateSets_blah(dataDict, granularity = "region", ignore_node = -1):
 
   return trainX, trainY, testX, testY,testY_full
 
-
 def generateSets(dataDict, granularity = "region", ignore_node = -1):
-
   if granularity not in valid_types:
     return -1;
-
-  # if ignore_node > 5:
-    # return -1;
   trainX = []
   trainY = []
   testX  = []
@@ -95,10 +90,18 @@ def generateSets(dataDict, granularity = "region", ignore_node = -1):
   testY_full =[]
 
   for position in dataDict.keys():
+    # print position
     if granularity == 'region':
       data_pos = position;
     elif granularity == 'room':
       data_pos = position.split("_")[0]
+
+    elif granularity == 'UL':
+      splitPos =  position.split("_")
+      data_pos = "_".join(splitPos[0:2])
+
+    elif granularity == 'LR':
+        data_pos = position;
     else:
       data_pos = position;
 
@@ -115,7 +118,7 @@ def generateSets(dataDict, granularity = "region", ignore_node = -1):
           minRSSI = min(nodeRSSI);
           maxRSSI = max(nodeRSSI); 
           feat += [mean , median]
-        if (i < len(data)-1):
+        if (i < 100):#len(data)-1):
           trainX.append(feat);
           trainY.append(data_pos);
         else:
@@ -125,27 +128,96 @@ def generateSets(dataDict, granularity = "region", ignore_node = -1):
 
   return trainX, trainY, testX, testY,testY_full
 
-def generate_room_specific_classifiers(dataDict,node = -1):
-  dict5300 = dict((k,dataDict[k]) for k in dataDict.keys() if "5300" in k)
-  X, Y, testX, testY,_ = generateSets(dict5300,'region',node);
-  train_set = np.array(X)
-  clf5300 = KNeighborsClassifier(n_neighbors=60, weights="distance").fit(train_set, Y); #SVC(kernel='linear', C=2).fit(train_set, Y)
+def generate_room_specific_classifiers(dataDict,node = -1, given = "room"):
+  if given == "room":
+    dict5300 = dict((k,dataDict[k]) for k in dataDict.keys() if "5300" in k)
+    X, Y, testX, testY,_ = generateSets(dict5300,'region',node);
+    train_set = np.array(X)
+    clf5300 = KNeighborsClassifier(n_neighbors=60, weights="distance").fit(train_set, Y); #SVC(kernel='linear', C=2).fit(train_set, Y)
 
-  dict5302 = dict((k,dataDict[k]) for k in dataDict.keys() if "5302" in k)
-  X, Y, testX, testY,_ = generateSets(dict5302,'region',node);
-  train_set = np.array(X)
+    dict5302 = dict((k,dataDict[k]) for k in dataDict.keys() if "5302" in k)
+    X, Y, testX, testY,_ = generateSets(dict5302,'region',node);
+    train_set = np.array(X)
 
-  clf5302 =  KNeighborsClassifier(n_neighbors=60, weights="distance").fit(train_set, Y); #SVC(kernel='linear', C=2).fit(train_set, Y)
-  train_set = np.array(X)
+    clf5302 =  KNeighborsClassifier(n_neighbors=60, weights="distance").fit(train_set, Y); #SVC(kernel='linear', C=2).fit(train_set, Y)
+    train_set = np.array(X)
 
-  dict5304 = dict((k,dataDict[k]) for k in dataDict.keys() if "5304" in k)
-  X, Y, testX, testY,_ = generateSets(dict5304,'region',node);
-  train_set = np.array(X)
+    dict5304 = dict((k,dataDict[k]) for k in dataDict.keys() if "5304" in k)
+    X, Y, testX, testY,_ = generateSets(dict5304,'region',node);
+    train_set = np.array(X)
 
-  clf5304 = KNeighborsClassifier(n_neighbors=60, weights="distance").fit(train_set, Y); # SVC(kernel='linear', C=2).fit(train_set, Y)
-  train_set = np.array(X)
+    clf5304 = KNeighborsClassifier(n_neighbors=60, weights="distance").fit(train_set, Y); # SVC(kernel='linear', C=2).fit(train_set, Y)
+    train_set = np.array(X)
 
-  return clf5300,clf5302,clf5304
+    return clf5300,clf5302,clf5304
+  elif given == "UL":
+    dict5300 = dict((k,dataDict[k]) for k in dataDict.keys() if "5300" in k)
+    print dict5300.keys()
+
+    X, Y, testX, testY,_ = generateSets(dict5300,'UL',node);
+    train_set = np.array(X)
+    clf5300_UL = KNeighborsClassifier(n_neighbors=60, weights="distance").fit(train_set, Y); #SVC(kernel='linear', C=2).fit(train_set, Y)
+    print "UL - given 5300 score: ", clf5300_UL.score(testX,testY)
+    dict5302 = dict((k,dataDict[k]) for k in dataDict.keys() if "5302" in k)
+    X, Y, testX, testY,_ = generateSets(dict5302,'UL',node);
+    train_set = np.array(X)
+    clf5302_UL =  KNeighborsClassifier(n_neighbors=60, weights="distance").fit(train_set, Y); #SVC(kernel='linear', C=2).fit(train_set, Y)
+    train_set = np.array(X)
+    print "UL - given 5302 score: ", clf5302_UL.score(testX,testY)
+    dict5304 = dict((k,dataDict[k]) for k in dataDict.keys() if "5304" in k)
+    X, Y, testX, testY,_ = generateSets(dict5304,'UL',node);
+    train_set = np.array(X)
+    clf5304_UL = KNeighborsClassifier(n_neighbors=60, weights="distance").fit(train_set, Y); # SVC(kernel='linear', C=2).fit(train_set, Y)
+    train_set = np.array(X)
+    print "UL - given 5304 score: ", clf5304_UL.score(testX,testY)
+    return clf5300_UL,clf5302_UL,clf5304_UL  
+  elif given == "UL-LR":
+    dict5300 = dict((k,dataDict[k]) for k in dataDict.keys() if "5300" in k)
+    X, Y, testX, testY,_ = generateSets(dict5300,'LR',node);
+    train_set = np.array(X)
+    clf5300_LR = KNeighborsClassifier(n_neighbors=60, weights="distance").fit(train_set, Y); #SVC(kernel='linear', C=2).fit(train_set, Y)
+    print "LR - given 5300 score: ", clf5300_LR.score(testX,testY)
+
+
+
+    dict5302 = dict((k,dataDict[k]) for k in dataDict.keys() if "5302_upper" in k)
+    X, Y, testX, testY,_ = generateSets(dict5302,'LR',node);
+    train_set = np.array(X)
+    clf5302_LR_upper =  KNeighborsClassifier(n_neighbors=60, weights="distance").fit(train_set, Y); #SVC(kernel='linear', C=2).fit(train_set, Y)
+    train_set = np.array(X)
+    print dict5302.keys()
+    print "LR - given 5302_upper score: ", clf5302_LR_upper.score(testX,testY)
+    dict5302 = dict((k,dataDict[k]) for k in dataDict.keys() if "5302_lower" in k)
+    X, Y, testX, testY,_ = generateSets(dict5302,'LR',node);
+    train_set = np.array(X)
+    clf5302_LR_lower =  KNeighborsClassifier(n_neighbors=60, weights="distance").fit(train_set, Y); #SVC(kernel='linear', C=2).fit(train_set, Y)
+    train_set = np.array(X)
+    print dict5302.keys()
+
+    print "LR - given 5302_lower score: ", clf5302_LR_lower.score(testX,testY)
+
+    dict5304 = dict((k,dataDict[k]) for k in dataDict.keys() if "5304_upper" in k)
+    X, Y, testX, testY,_ = generateSets(dict5304,'LR',node);
+    train_set = np.array(X)
+    clf5304_LR_upper =  KNeighborsClassifier(n_neighbors=60, weights="distance").fit(train_set, Y); #SVC(kernel='linear', C=2).fit(train_set, Y)
+    train_set = np.array(X)
+    print dict5304.keys()
+
+    print "LR - given 5304_upper score: ", clf5304_LR_upper.score(testX,testY)
+    dict5304 = dict((k,dataDict[k]) for k in dataDict.keys() if "5304_lower" in k)
+    X, Y, testX, testY,_ = generateSets(dict5304,'LR',node);
+    train_set = np.array(X)
+    clf5304_LR_lower =  KNeighborsClassifier(n_neighbors=60, weights="distance").fit(train_set, Y); #SVC(kernel='linear', C=2).fit(train_set, Y)
+    train_set = np.array(X)
+    print dict5304.keys()
+
+    print "LR - given 5304_lower score: ", clf5304_LR_lower.score(testX,testY)
+    return clf5300_LR,clf5302_LR_upper,clf5302_LR_lower,clf5304_LR_upper,clf5304_LR_lower  
+
+
+
+
+
 
 
 def generate_node_off_classifiers(dataDict,region = "region"):
@@ -253,6 +325,7 @@ def main():
   ## Testing on room level (3 values)
   ########
   X, Y, testX, testY, testY_full = generateSets(rawData,"room");
+  tXroom = testX;
   train_set = np.array(X)
 
   clf_room = SVC(kernel='linear', C=2).fit(train_set, Y)
@@ -261,6 +334,7 @@ def main():
   # print clf.score(testX,testY_full)
 
   clf = KNeighborsClassifier(n_neighbors=12, weights="distance")
+  clfROOM = clf
   clf.fit(train_set, Y)
   joblib.dump(clf, str.format('knn_room_{}.pkl',KNN_VERSION)) 
 
@@ -340,13 +414,70 @@ def main():
     joblib.dump(clf5302, str.format('knn_region_given_5302_node_{}_off_{}.pkl',i,KNN_VERSION)) 
     joblib.dump(clf5304, str.format('knn_region_given_5304_node_{}_off_{}.pkl',i,KNN_VERSION)) 
 
-  X, Y, testX, testY,_ = generateSets_blah(rawData,'room');
+  X, Y, testX, testY,_ = generateSets_n0_n3_off(rawData,'room');
   train_set = np.array(X)
   test_setX = np.array(testX)
   test_setY = np.array(testY)
   clf_node0_node3_off = KNeighborsClassifier(n_neighbors=12, weights="distance").fit(train_set, Y); #SVC(kernel='linear', C=2).fit(train_set, Y)
   print clf_node0_node3_off.score(testX,testY)
   joblib.dump(clf, str.format('knn_n0_n3_off_{}.pkl',KNN_VERSION))
+
+
+  clf5300_UL,clf5302_UL,clf5304_UL = generate_room_specific_classifiers(rawData,-1,"UL");   
+  clf5300_LR,clf5302_LR_upper,clf5302_LR_lower,clf5304_LR_upper,clf5304_LR_lower   = generate_room_specific_classifiers(rawData,-1,"UL-LR"); 
+
+  correct5300 = 0
+  total5300 = 0
+  correct5302 = 0
+  total5302 = 0
+  correct5304 = 0
+  total5304 = 0
+  for event,result in zip(tXroom,testY_full):
+    event = [event]
+    room = clfROOM.predict(event)[0];
+    if room == "5300":
+      pred = clf5300_UL.predict(event);
+      print pred[0], "  vs.  ", result
+
+      if pred[0] == result:
+        correct5300 +=1;
+      total5300 +=1;
+
+    elif room == "5302":
+      pred =clf5302_UL.predict(event);
+      print pred[0], "  vs.  ", result
+
+      if "lower" in pred[0]:
+        pred =clf5302_LR_lower.predict(event);       
+        print pred[0], "  vs.  ", result
+        if pred[0] == result:
+          correct5302 +=1;
+      if "upper" in pred[0]:
+        pred =clf5302_LR_upper.predict(event);       
+        print pred[0], "  vs.  ", result    
+        if pred[0] == result:
+          correct5302 +=1;
+      total5302 +=1;
+    elif room == "5304":
+      pred = clf5304_UL.predict(event);
+      print pred[0], "  vs.  ", result
+
+      if pred[0] in result:
+        correct5304 +=1;
+      total5304 +=1;
+  # print "---------------"
+  # print "5300"
+  # print "correct: ",correct5300, "total: ",total5300
+  # print "accuracy: ", correct5300*100/float(total5300)
+  print "---------------"
+  print "5302UL"
+  print "correct: ",correct5302, "total: ",total5302
+  print "accuracy: ", correct5302*100/float(total5302)
+  print "---------------"
+  print "5304UL"
+  print "correct: ",correct5304, "total: ",total5304
+  print "accuracy: ", correct5304*100/float(total5304)
+  # joblib.dump(clf, str.format('knn_region_{}.pkl',KNN_VERSION) )
 
 if __name__ == '__main__':
   main()

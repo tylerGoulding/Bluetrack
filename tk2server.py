@@ -17,7 +17,7 @@ from sklearn.externals import joblib
 import os
 import random
 import time
-
+from collections import deque
 H_5300 = 96
 H_5302 = 325
 W_5302 = 230
@@ -228,8 +228,9 @@ class RoomLocatorFactory(Factory):
 
 class User():
     def __init__(self, number):
+        self.path_q = deque(maxlen=5)
         self.number = number;
-        self.path = []
+        # self.path = []
         self.previous_region = ""
         self.current_region = ""
         self.previous_region_c = ""
@@ -304,8 +305,13 @@ class User():
             return room, self.current_region_c;
 
     def addPath(self):
-        if (self.current_region != self.previous_region):
-            self.path.append(self.current_region);
+        path_q.append(self.current_region);
+
+
+
+        # if (self.current_region != self.previous_region):
+            # self.path.append(self.current_region);
+
 
     def clearPrevious(self, w):
         if ((len(self.path) > 0)):
@@ -320,6 +326,7 @@ class User():
 
     def drawCurrent(self, w, user_colors):
         index = names.index(self.current_region);
+
         w.itemconfig(positions[index], fill=user_colors[self.number]);
 
 # endpoint = TCP4ServerEndpoint(reactor, 8007)
@@ -347,7 +354,7 @@ def drawSpace(w):
                                   offset5304[1]+height5304,fill='cornsilk2')
 
     wean5300_positions[0] = w.create_rectangle(offset5300[0], offset5300[1], (offset5300[0]+(width5300/3)),
-                                              (offset5300[1]+(height5300)) , fill='cornsilk2', outline='black')
+                                              (offset5300[1]+(height5300)) , fill='black', outline='black', stipple="gray12")
     wean5300_positions[1] = w.create_rectangle((offset5300[0]+width5300/3), offset5300[1], (offset5300[0]+(2*width5300/3)),
                                               (offset5300[1]+(height5300)) , fill='cornsilk2', outline='black')
     wean5300_positions[2] = w.create_rectangle((offset5300[0]+2*width5300/3), offset5300[1],  (offset5300[0]+(width5300)),
