@@ -334,7 +334,7 @@ class User():
 def drawSpace(w):
     global positions
     increment = 1 #WINDOW_HEIGHT/700
-    offset5300 = WINDOW_WIDTH/8, WINDOW_HEIGHT/8
+    offset5300 = WINDOW_WIDTH/16, WINDOW_HEIGHT/16
     height5300 = increment*H_5300
     width5302 = increment*W_5302
     height5302  = increment*H_5302
@@ -342,14 +342,21 @@ def drawSpace(w):
     width5304 = increment*W_5304
     height5304  = increment*H_5304
     offset5304 = (offset5302[0] + width5302 + WALL_WIDTH), offset5300[1] + height5300 +WALL_WIDTH
-    width5300 = increment*(1.5*width5302+width5304+4*WALL_WIDTH)
+    width5300 = increment*(2*width5302+width5304+4*WALL_WIDTH)
 
     corridor = w.create_rectangle(offset5300[0], offset5300[1],  offset5300[0]+width5300,
                                   offset5300[1]+height5300,fill='cornsilk2')
     wean5302 = w.create_rectangle(offset5302[0], offset5302[1],  offset5302[0]+width5302,
                                   offset5302[1]+height5302,fill='cornsilk2')
+
     wean5304 = w.create_rectangle(offset5304[0], offset5304[1],  offset5304[0]+width5304,
                                   offset5304[1]+height5304,fill='cornsilk2')
+
+    wean5310 = w.create_rectangle(offset5304[0]+WALL_WIDTH+width5304, offset5302[1],
+                                  WINDOW_WIDTH-60, offset5302[1]+height5302, fill="grey30")
+
+    wean5310_txt = w.create_text((offset5304[0]+WALL_WIDTH+width5304+WINDOW_WIDTH-50)/2, 
+                                (offset5302[1]*2 + height5302)/2, text="5310", font="Helvetica 20 italic")
 
     wean5300_positions[0] = w.create_rectangle(offset5300[0], offset5300[1], (offset5300[0]+(width5300/3)),
                                               (offset5300[1]+(height5300)) , fill='cornsilk2', outline='black')
@@ -373,6 +380,18 @@ def drawSpace(w):
                                               (offset5304[1]+(height5304)) , fill='cornsilk2',outline='black')
     wean5304_positions[3] = w.create_rectangle(offset5304[0]+width5304/2, offset5304[1]+(height5304)/2, (offset5304[0]+(width5304)),
                                               (offset5304[1]+(height5304)) , fill='cornsilk2',outline='black')
+
+
+    # wean5302_txt = w.create_text((offset5302[0]*2+width5302)/2, 
+    #                             (offset5302[1]*2 + height5302)/2, text="5302",
+    #                             font="Helvetica 20")
+
+    # wean5300_txt = w.create_text((offset5300[0]*2+width5300)/2, 
+    #                             (offset5300[1]*2 + height5300)/2, text="Corridor 5300",
+    #                             font="Helvetica 20")
+    # wean5304_txt = w.create_text((offset5304[0]*2+width5304)/2, 
+    #                             (offset5304[1]*2 + height5304)/2, text="5304",
+    #                             font="Helvetica 20")
 
     legend_width = 220
     legend_height = 160
@@ -429,6 +448,7 @@ def main():
     root.title("BlueTrack")
     # Install the Reactor support
     w = Canvas(root, width=WINDOW_WIDTH, height=WINDOW_HEIGHT,background='SkyBlue4')
+    root.resizable(width=False, height=False)
     w.pack()
     drawSpace(w);
     # blacklist_dict = create_blacklist();
@@ -442,7 +462,7 @@ def main():
                                 # clf_n3_off_centralized, clf_n4_off_centralized, clf_n5_off_centralized]
 
     tksupport.install(root)
-    reactor.listenTCP(8001, RoomLocatorFactory(w))
+    reactor.listenTCP(8025, RoomLocatorFactory(w))
     reactor.run()
 
 if __name__ == '__main__':
