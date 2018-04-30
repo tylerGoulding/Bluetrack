@@ -110,10 +110,8 @@ class RoomLocator(LineReceiver):
         self.clf_n5_off_centralized = joblib.load('knn_region_node_5_off_centralized.pkl')
         self.clf_node_off_all = [self.clf_n0_off_all, self.clf_n1_off_all, self.clf_n2_off_all, self.clf_n3_off_all,
                         self.clf_n4_off_all, self.clf_n5_off_all]
-
         self.clf_node_off_distributed = [self.clf_n0_off_distributed, self.clf_n1_off_distributed, self.clf_n2_off_distributed,
                                 self.clf_n3_off_distributed, self.clf_n4_off_distributed, self.clf_n5_off_distributed]
-
         self.clf_node_off_centralized = [self.clf_n0_off_centralized, self.clf_n1_off_centralized, self.clf_n2_off_centralized,
                                 self.clf_n3_off_centralized, self.clf_n4_off_centralized, self.clf_n5_off_centralized]
 
@@ -139,12 +137,10 @@ class RoomLocator(LineReceiver):
             timestamp.append(data[1])
             rssi_values.append(map(float,data[2:]))
         return int(user), timestamp, rssi_values
+
     def dataReceived(self, data):
         self.data = self.process_buffer(str(data));
         user_colors = ['red', 'blue'];
-
-        # print line
-        # print self.data
 
         self.user_id = self.data[0];
         user = self.factory.user_list[self.user_id]
@@ -161,6 +157,7 @@ class RoomLocator(LineReceiver):
             else:
                 self.node_off_count[val] = 0;
                 self.node_off = -1; 
+
         current_region = user.predictRegion(self.RSSIvalues, self.blacklist_dict, self.node_off, self.clf_room_all, self.clf5300_all, 
                                            self.clf5302_all, self.clf5304_all, self.clf_node_off_all); 
         current_region_c = user.predictRegion(self.RSSIvalues, self.blacklist_dict, self.node_off, self.clf_room_centralized,
@@ -180,38 +177,7 @@ class RoomLocator(LineReceiver):
         user.addPath();
         user.previous_region = user.current_region;
         user.previous_region_d = user.current_region_d;
-        user.previous_region_c = user.current_region_c;        
-    def lineReceived(self, line):
-        print "hello"
-        data = process_buffer(line);
-        print line
-        print data
-        self.user_id = self.data[0];
-        user = self.factory.user_list[self.user_id]
-        self.timestamp = self.data[1];
-        self.RSSIvalues = self.data[2:];
-        current_region = user.predictRegion(rssi_values, blacklist_dict, node_off, clf_room_all, clf5300_all, 
-                                           clf5302_all, clf5304_all, clf_node_off_all); 
-        current_region_c = user.predictRegion(rssi_values, blacklist_dict, node_off, clf_room_centralized,
-                                             clf5300_centralized, clf5302_centralized, clf5304_centralized, 
-                                             clf_node_off_centralized, "center"); 
-        current_region_d = user.predictRegion(rssi_values, blacklist_dict, node_off, clf_room_distributed, 
-                                             clf5300_distributed, clf5302_distributed, clf5304_distributed,
-                                             clf_node_off_distributed, "dist"); 
-
-        pred[user_num][user.i] = (current_region)
-        pred_d[user_num][user.i] = (current_region_d)
-        pred_c[user_num][user.i] = (current_region_c)
-        user.i = (user.i+1)%3  
-        user.clearPrevious(w);
-        user.drawCurrent(w, user_colors);
-
-        user.addPath();
-        user.previous_region = user.current_region;
-        user.previous_region_d = user.current_region_d;
-        user.previous_region_c = user.current_region_c;      
-        # if response:
-        #     self.transport.write(response)
+        user.previous_region_c = user.current_region_c;
 
     def connectionMade(self):
         print "hello"
