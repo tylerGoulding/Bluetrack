@@ -37,7 +37,6 @@ names = wean5300_names + wean5302_names + wean5304_names
 
 #wean5304_names = ['5304_lower_left','5304_lower_right', '5304_upper_left','5304_upper_right']
 
- #load all training models with one node off as well
 #load all training models with one node off as well
 # clf_room_all = joblib.load('knn_room_all.pkl')
 # clf5300_all = joblib.load('knn_region_given_5300_all.pkl');
