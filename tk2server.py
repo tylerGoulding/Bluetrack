@@ -125,8 +125,8 @@ class RoomLocator(LineReceiver):
         self.user_id = -1
         self.timestamp = -1
         self.RSSIvalues = []
-        # self.frame = self.factory.frame(root)
-        # frame.pack()
+        # self.canvas = self.factory.canvas(root)
+        # canvas.pack()
         self.blacklist_dict = create_blacklist();
 
     def process_buffer(self,buffer):
@@ -141,58 +141,75 @@ class RoomLocator(LineReceiver):
         return int(user), timestamp, rssi_values
 
     def dataReceived(self, data):
-        self.data = self.process_buffer(str(data));
-        user_colors = ['red', 'blue'];
-        self.user_id = self.data[0];
-        user = self.factory.user_list[self.user_id]
-        self.timestamp = self.data[1];
-        self.RSSIvalues = self.data[2];
-        print self.RSSIvalues
-        for val in xrange((len(self.RSSIvalues[0])/2)):
-            if (self.RSSIvalues[0][val*2] == -150):
-                if (self.node_off_count[val] > 3):
-                    self.node_off = val;
-                    break;
+        if data != '':
+            self.data = self.process_buffer(str(data));
+            user_colors = ['red', 'blue'];
+            self.user_id = self.data[0];
+            user = self.factory.user_list[self.user_id]
+            self.timestamp = self.data[1];
+            self.RSSIvalues = self.data[2];
+            # print self.RSSIvalues
+            for val in xrange((len(self.RSSIvalues[0])/2)):
+                if (self.RSSIvalues[0][val*2] == -150):
+                    if (self.node_off_count[val] > 3):
+                        self.node_off = val;
+                        break;
+                    else:
+                        self.node_off_count[val] += 1; 
                 else:
-                    self.node_off_count[val] += 1; 
-            else:
-                self.node_off_count[val] = 0;
-                self.node_off = -1; 
+                    self.node_off_count[val] = 0;
+                    self.node_off = -1; 
 
-        current_region = user.predictRegion(self.RSSIvalues, self.blacklist_dict, self.node_off, self.clf_room_all, self.clf5300_all, 
-                                           self.clf5302_all, self.clf5304_all, self.clf_node_off_all); 
-        current_region_c = user.predictRegion(self.RSSIvalues, self.blacklist_dict, self.node_off, self.clf_room_centralized,
-                                             self.clf5300_centralized, self.clf5302_centralized, self.clf5304_centralized, 
-                                             self.clf_node_off_centralized, "center"); 
+            room, current_region = user.predictRegion(self.RSSIvalues, self.blacklist_dict, self.node_off, self.clf_room_all, self.clf5300_all, 
+                                               self.clf5302_all, self.clf5304_all, self.clf_node_off_all); 
+            _,current_region_c = user.predictRegion(self.RSSIvalues, self.blacklist_dict, self.node_off, self.clf_room_centralized,
+                                                 self.clf5300_centralized, self.clf5302_centralized, self.clf5304_centralized, 
+                                                 self.clf_node_off_centralized, "center"); 
+            _,current_region_d = user.predictRegion(self.RSSIvalues, self.blacklist_dict, self.node_off,
+                                                self.clf_room_distributed, self.clf5300_distributed,
+                                                self.clf5302_distributed, self.clf5304_distributed,
+                                                self.clf_node_off_distributed, "dist"); 
 
-        current_region_d = user.predictRegion(self.RSSIvalues, self.blacklist_dict, self.node_off,
-                                            self.clf_room_distributed, self.clf5300_distributed,
-                                            self.clf5302_distributed, self.clf5304_distributed,
-                                            self.clf_node_off_distributed, "dist"); 
 
-        self.pred[self.user_id][user.i] = (current_region)
-        self.pred_d[self.user_id][user.i] = (current_region_d)
-        self.pred_c[self.user_id][user.i] = (current_region_c)
-        user.i = (user.i+1)%3  
+            ########################################################
+            # test tomorro
+            # if (user.current_region == "5304_lower_right" and user.current_region_d == "5304_lower_right"):
+            #    user.current_region = "5304_lower_right";
+            # else:
+            #    user.current_region = user.current_region_c
 
-        ########################################################
-        # test tomorro
-        # if (user.current_region == "5304_lower_right" and user.current_region_d == "5304_lower_right"):
-        #    user.current_region = "5304_lower_right";
-        # else:
-        #    user.current_region = user.current_region_c
-        ########################################################
+            self.pred[self.user_id][user.i] = (user.current_region)
+            self.pred_d[self.user_id][user.i] = (user.current_region_d)
+            self.pred_c[self.user_id][user.i] = (user.current_region_c)
+            if room == "5302":
+                total = self.pred[self.user_id] +self.pred_d[self.user_id] 
+            if (self.user_id == 0):
+                print "User Zero:"
+                print "Pred Al:      ", max(self.pred[self.user_id], key=self.pred[self.user_id].count), self.pred[self.user_id]
+                print "Pred Central: ", max(self.pred_c[self.user_id], key=self.pred_c[self.user_id].count), self.pred_c[self.user_id]
+                print "Pred Distrib: ", max(self.pred_d[self.user_id], key=self.pred_d[self.user_id].count), self.pred_d[self.user_id]
+                print "Most Commom:  ", max(total, key=total.count)
+                if "5302_upper_left" in total:
+                    print "Ignore most common: In 5302_upper_left"
+                print "____________"
 
-        user.clearPrevious(self.factory.frame);
-        user.drawCurrent(self.factory.frame, user_colors);
-        user.addPath();
-        user.previous_region = user.current_region;
-        user.previous_region_d = user.current_region_d;
-        user.previous_region_c = user.current_region_c; 
 
-        if (self.factory.user_list[0].current_region == self.factory.user_list[1].current_region):
-            index = names.index(user.current_region);
-            w.itemconfig(positions[index], fill='DarkOrchid4');
+            user.i = (user.i+1)%3  
+            ########################################################
+
+            #pred_list = self.pred[self.user_id] + self.pred_d[self.user_id] + self.pred_c[self.user_id]
+            user.current_region = max(total, key=total.count)
+            if user.current_region != '':
+                user.clearPrevious(self.factory.canvas);
+                user.drawCurrent(self.factory.canvas, user_colors);
+                user.addPath();
+                user.previous_region = user.current_region;
+                user.previous_region_d = user.current_region_d;
+                user.previous_region_c = user.current_region_c; 
+
+                if (self.factory.user_list[0].current_region == self.factory.user_list[1].current_region):
+                    index = names.index(user.current_region);
+                    self.factory.canvas.itemconfig(positions[index], fill='DarkOrchid4');
 
     def connectionMade(self):
         print "hello"
@@ -203,8 +220,8 @@ class RoomLocator(LineReceiver):
 class RoomLocatorFactory(Factory):
     # This will be used by the default buildProtocol to create new protocols:
     protocol = RoomLocator
-    def __init__(self,frame, numUsers = None, verbose = False):
-        self.frame = frame;
+    def __init__(self,canvas, numUsers = None, verbose = False):
+        self.canvas = canvas;
         self.numUsers = numUsers or 1;
         self.verbose = verbose;
         self.user_list = [User(0), User(1)];
@@ -255,7 +272,7 @@ class User():
                     self.current_region = predicted_region;
                     self.blacklist_count = 0;
 
-            return self.current_region;
+            return room, self.current_region;
 
         elif (region=="dist"):
             if (self.current_region_d == ""):
@@ -269,7 +286,7 @@ class User():
                     self.current_region_d = predicted_region;
                     self.blacklist_count_d = 0;
 
-            return self.current_region_d;
+            return room, self.current_region_d;
 
         elif (region=="center"):
             if (self.current_region_c == ""):
@@ -284,7 +301,7 @@ class User():
                     self.current_region_c = predicted_region;
                     self.blacklist_count_c = 0;
 
-            return self.current_region_c;
+            return room, self.current_region_c;
 
     def addPath(self):
         if (self.current_region != self.previous_region):
@@ -293,6 +310,12 @@ class User():
     def clearPrevious(self, w):
         if ((len(self.path) > 0)):
             index = names.index(self.path[-1]);
+            print w.itemcget(positions[index], "fill")
+            if (self.number == 1) and (w.itemcget(positions[index], "fill") == 'DarkOrchid4'):
+                w.itemconfig(positions[index], fill='blue');
+            if (self.number == 0) and (w.itemcget(positions[index], "fill") == 'DarkOrchid4'):
+                w.itemconfig(positions[index], fill='red');
+
             w.itemconfig(positions[index], fill='cornsilk2');
 
     def drawCurrent(self, w, user_colors):
@@ -396,102 +419,6 @@ def create_blacklist():
 
     return blacklist_dict;
 
-
-# def trackPerson(root):
-#     w = Canvas(root, width=WINDOW_WIDTH, height=WINDOW_HEIGHT,background='SkyBlue4')
-#     w.pack()
-#     drawSpace(w);
-
-#     user_colors = ['red', 'blue'];
-#     blacklist_dict = create_blacklist();
-#     clf_node_off_all = [clf_n0_off_all, clf_n1_off_all, clf_n2_off_all, clf_n3_off_all,
-#                         clf_n4_off_all, clf_n5_off_all]
-
-#     clf_node_off_distributed = [clf_n0_off_distributed, clf_n1_off_distributed, clf_n2_off_distributed,
-#                                 clf_n3_off_distributed, clf_n4_off_distributed, clf_n5_off_distributed]
-
-#     clf_node_off_centralized = [clf_n0_off_centralized, clf_n1_off_centralized, clf_n2_off_centralized,
-#                                 clf_n3_off_centralized, clf_n4_off_centralized, clf_n5_off_centralized]
-
-#     pred = [["","",""], ["","",""]]
-#     pred_d = [["","",""], ["","",""]]
-#     pred_c = [["","",""], ["","",""]]
-
-#     user_list = [User(0), User(1)];
-#     node_off = -1;
-#     node_off_count = [0, 0, 0, 0, 0, 0];
-#     count = 0;
-#     user_num = 0;
-#     while (1): 
-#         time.sleep(0.25);
-#         count +=1;
-#         #receive data from server
-#         #call roomLocator instance
-#         #find line received for rssi values 
-#         #user 1 or user 2? roomLocator.user; 
-#         if (user_num == 1): 
-#             user_num = 0; #roomLocator.user; 
-#             rssi_values = [[-50, -60, -50, -59, -48, -41, -49, -89, -88, -90, -95, -96]];
-#         else:
-#             user_num = 1;
-#             rssi_values = [[-90, -90, -80, -89, -78, -71, -69, -79, -78, -70, -65, -60]];
-
-#         user = user_list[user_num]; 
-#         #node off depends on values received from either user
-#         for val in xrange((len(rssi_values[0])/2)):
-#             if (rssi_values[0][val*2] == -150):
-#                 if (node_off_count[val] > 3):
-#                     node_off = val;
-#                     break;
-#                 else:
-#                     node_off_count[val] += 1; 
-#             else:
-#                 node_off_count[val] = 0;
-#                 node_off = -1; 
-
-#         # check if one of the nodes is off
-#         # choose the correct clf
-
-#         current_region = user.predictRegion(rssi_values, blacklist_dict, node_off, clf_room_all, clf5300_all, 
-#                                            clf5302_all, clf5304_all, clf_node_off_all); 
-#         current_region_c = user.predictRegion(rssi_values, blacklist_dict, node_off, clf_room_centralized,
-#                                              clf5300_centralized, clf5302_centralized, clf5304_centralized, 
-#                                              clf_node_off_centralized, "center"); 
-#         current_region_d = user.predictRegion(rssi_values, blacklist_dict, node_off, clf_room_distributed, 
-#                                              clf5300_distributed, clf5302_distributed, clf5304_distributed,
-#                                              clf_node_off_distributed, "dist"); 
-
-#         pred[user_num][user.i] = (current_region)
-#         pred_d[user_num][user.i] = (current_region_d)
-#         pred_c[user_num][user.i] = (current_region_c)
-#         user.i = (user.i+1)%3
-#         # I am overwriting the room in this block just for testing 
-#         if (user_num == 1): 
-#             user.current_region = random.choice(wean5304_names);
-
-#         else: 
-#             user.current_region = random.choice(wean5302_names);
-
-#         #print user.number, user.current_region;
-#         user.clearPrevious(w);
-#         user.drawCurrent(w, user_colors);
-
-#         user.addPath();
-#         user.previous_region = user.current_region;
-#         user.previous_region_d = user.current_region_d;
-#         user.previous_region_c = user.current_region_c;
-
-#         if (user_list[0].current_region == user_list[1].current_region):
-#             index = names.index(user.current_region);
-#             w.itemconfig(positions[index], fill='DarkOrchid4');
-
-#########################################################################3
-
-#reactor.listenTCP(8125, RoomLocatorFactory())
-# at this point build Tk app as usual using the root object,
-# and start the program with "reactor.run()", and stop it
-# with "reactor.stop()".
-
 def main():
     root = Tk()
     root.title("BlueTrack")
@@ -499,15 +426,15 @@ def main():
     w = Canvas(root, width=WINDOW_WIDTH, height=WINDOW_HEIGHT,background='SkyBlue4')
     w.pack()
     drawSpace(w);
-    blacklist_dict = create_blacklist();
-    clf_node_off_all = [clf_n0_off_all, clf_n1_off_all, clf_n2_off_all, clf_n3_off_all,
-                        clf_n4_off_all, clf_n5_off_all]
+    # blacklist_dict = create_blacklist();
+    # clf_node_off_all = [clf_n0_off_all, clf_n1_off_all, clf_n2_off_all, clf_n3_off_all,
+                        # clf_n4_off_all, clf_n5_off_all]
 
-    clf_node_off_distributed = [clf_n0_off_distributed, clf_n1_off_distributed, clf_n2_off_distributed,
-                                clf_n3_off_distributed, clf_n4_off_distributed, clf_n5_off_distributed]
+    # clf_node_off_distributed = [clf_n0_off_distributed, clf_n1_off_distributed, clf_n2_off_distributed,
+                                # clf_n3_off_distributed, clf_n4_off_distributed, clf_n5_off_distributed]
 
-    clf_node_off_centralized = [clf_n0_off_centralized, clf_n1_off_centralized, clf_n2_off_centralized,
-                                clf_n3_off_centralized, clf_n4_off_centralized, clf_n5_off_centralized]
+    # clf_node_off_centralized = [clf_n0_off_centralized, clf_n1_off_centralized, clf_n2_off_centralized,
+                                # clf_n3_off_centralized, clf_n4_off_centralized, clf_n5_off_centralized]
 
     tksupport.install(root)
     reactor.listenTCP(8001, RoomLocatorFactory(w))
