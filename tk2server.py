@@ -69,6 +69,8 @@ names = wean5300_names + wean5302_names + wean5304_names
 # clf_n4_off_centralized = joblib.load('knn_region_node_4_off_centralized.pkl')
 # clf_n5_off_centralized = joblib.load('knn_region_node_5_off_centralized.pkl')
 
+
+
 class RoomLocator(LineReceiver):
     delimiter = '\n'
     def __init__(self):
@@ -129,6 +131,12 @@ class RoomLocator(LineReceiver):
         # canvas.pack()
         self.blacklist_dict = create_blacklist();
 
+    def color_blend(c1,c2):
+        r = c1.red+c2.red;
+        g = c1.green+c2.green;
+        b = c1.blue+c2.blue;
+
+        return Color((r, g, b))
     def process_buffer(self,buffer):
         timestamp = []
         rssi_values = []
@@ -228,6 +236,9 @@ class RoomLocatorFactory(Factory):
 
 class User():
     def __init__(self, number):
+        self.user_color_list = [ [Color(hex='#ff2a1a'),Color(hex='#f66340'),Color(hex='#f09063'),Color(hex='#edb284'),Color(hex='#eccba2')],
+                                 [Color(hex='#103ffb'),Color(hex='#38baf3'),Color(hex='#5dedd1'),Color(hex='#7feba0'),Color(hex='#aeea9f')] ]
+
         self.path_q = deque(maxlen=5)
         self.number = number;
         # self.path = []
@@ -305,7 +316,8 @@ class User():
             return room, self.current_region_c;
 
     def addPath(self):
-        path_q.append(self.current_region);
+        path_q.append(self.current_region)
+
         
         # if (self.current_region != self.previous_region):
             # self.path.append(self.current_region);
@@ -324,12 +336,7 @@ class User():
 
     def drawCurrent(self, w, user_colors):
         index = names.index(self.current_region);
-
         w.itemconfig(positions[index], fill=user_colors[self.number]);
-
-# endpoint = TCP4ServerEndpoint(reactor, 8007)
-# en/dpoint.listen(QOTDFactory("configurable quote"))
-# reactor.run()
 
 def drawSpace(w):
     global positions
@@ -381,18 +388,6 @@ def drawSpace(w):
     wean5304_positions[3] = w.create_rectangle(offset5304[0]+width5304/2, offset5304[1]+(height5304)/2, (offset5304[0]+(width5304)),
                                               (offset5304[1]+(height5304)) , fill='cornsilk2',outline='black')
 
-
-    # wean5302_txt = w.create_text((offset5302[0]*2+width5302)/2, 
-    #                             (offset5302[1]*2 + height5302)/2, text="5302",
-    #                             font="Helvetica 20")
-
-    # wean5300_txt = w.create_text((offset5300[0]*2+width5300)/2, 
-    #                             (offset5300[1]*2 + height5300)/2, text="Corridor 5300",
-    #                             font="Helvetica 20")
-    # wean5304_txt = w.create_text((offset5304[0]*2+width5304)/2, 
-    #                             (offset5304[1]*2 + height5304)/2, text="5304",
-    #                             font="Helvetica 20")
-
     legend_width = 220
     legend_height = 160
     legend_offset = 50
@@ -440,7 +435,6 @@ def create_blacklist():
     blacklist_dict['5300_lower'] = ('5300_upper', '5304', '5302_upper_right', '5302_upper_left');
     blacklist_dict['5300_middle'] = ('5304_upper_right', '5304_upper_left', '5302_upper_right', '5302_upper_left');
     blacklist_dict['5300_upper'] = ('5300_lower', '5302', '5304_upper_right', '5304_upper_left');
-
     return blacklist_dict;
 
 def main():
@@ -451,16 +445,6 @@ def main():
     root.resizable(width=False, height=False)
     w.pack()
     drawSpace(w);
-    # blacklist_dict = create_blacklist();
-    # clf_node_off_all = [clf_n0_off_all, clf_n1_off_all, clf_n2_off_all, clf_n3_off_all,
-                        # clf_n4_off_all, clf_n5_off_all]
-
-    # clf_node_off_distributed = [clf_n0_off_distributed, clf_n1_off_distributed, clf_n2_off_distributed,
-                                # clf_n3_off_distributed, clf_n4_off_distributed, clf_n5_off_distributed]
-
-    # clf_node_off_centralized = [clf_n0_off_centralized, clf_n1_off_centralized, clf_n2_off_centralized,
-                                # clf_n3_off_centralized, clf_n4_off_centralized, clf_n5_off_centralized]
-
     tksupport.install(root)
     reactor.listenTCP(8025, RoomLocatorFactory(w))
     reactor.run()
