@@ -134,10 +134,10 @@ class RoomLocator(LineReceiver):
         # canvas.pack()
         self.blacklist_dict = create_blacklist();
 
-    def color_blend(c1,c2):
-        r = c1.red+c2.red;
-        g = c1.green+c2.green;
-        b = c1.blue+c2.blue;
+    def color_blend(self,c1,c2):
+        r = (c1.red+c2.red)/2;
+        g = (c1.green+c2.green)/2;
+        b = (c1.blue+c2.blue)/2;
 
         return Color((r, g, b))
 
@@ -186,7 +186,7 @@ class RoomLocator(LineReceiver):
             self.pred[self.user_id][user.i] = (user.current_region)
             self.pred_d[self.user_id][user.i] = (user.current_region_d)
             self.pred_c[self.user_id][user.i] = (user.current_region_c)
-            
+
             total = self.pred[self.user_id] +self.pred_d[self.user_id] + self.pred_c[self.user_id]
 
             if room == "5302":
@@ -234,24 +234,28 @@ class RoomLocator(LineReceiver):
     def updateCanvas(self):
         user1 = self.factory.user_list[0];
         user2 = self.factory.user_list[1];
-
+        user1_index = -1;
+        user2_index = -1;
+        user1_start_color = 5 - len(user1.path_q);
+        user2_start_color = 5 - len(user2.path_q);
+        print "start color from index", user1_start_color;
         for location in names:
             if location != "":
                 index = names.index(location);
                 if ((location in user1.path_q) and (location in user2.path_q)):
                     user1_index = list(user1.path_q).index(location);
                     user2_index = list(user2.path_q).index(location);
-                    user1_color = user1.colors[user1_index];
-                    user2_color = user2.colors[user2_index];
-                    new_color = self.colorBlend(user1_color, user2_color);
+                    user1_color = user1.colors[user1_start_color + user1_index];
+                    user2_color = user2.colors[user2_start_color + user2_index];
+                    new_color = self.color_blend(user1_color, user2_color);
                     self.factory.canvas.itemconfig(positions[index], fill=str(new_color.hex));
                 elif (location in user1.path_q):
                     user1_index = list(user1.path_q).index(location);
-                    user1_color = user1.colors[user1_index];
+                    user1_color = user1.colors[user1_start_color + user1_index];
                     self.factory.canvas.itemconfig(positions[index], fill=str(user1_color.hex));
                 elif (location in user2.path_q):
                     user2_index = list(user2.path_q).index(location);
-                    user2_color = user2.colors[user2_index];
+                    user2_color = user2.colors[user2_start_color + user2_index];
                     self.factory.canvas.itemconfig(positions[index], fill=str(user2_color.hex));
                 else: 
                     self.factory.canvas.itemconfig(positions[index], fill='cornsilk2');
@@ -349,6 +353,7 @@ class User():
 
     def addPath(self):
         self.path_q.append(self.current_region)
+        print len(self.path_q);
         # if (self.current_region != self.previous_region):
             # self.path.append(self.current_region);
 
