@@ -19,7 +19,6 @@ KNN_POSSIBLE_VERSIONS = ["all","distributed","centralized"]
 # KNN_VERSION = "distributed"
 KNN_VERSION = "centralized"
 
-
 #### facilitate programming between Project Memebers
 dirname_tyler = "/Users/Tyler/Documents/GitHub/Bluetrack/"
 dirname_fatema = "C:\\Users\\Fatema Almeshqab\\Desktop\\Bluetrack\\"
@@ -216,12 +215,6 @@ def generate_room_specific_classifiers(dataDict,node = -1, given = "room"):
 
     print "LR - given 5304_lower score: ", clf5304_LR_lower.score(testX,testY)
     return clf5300_LR,clf5302_LR_upper,clf5302_LR_lower,clf5304_LR_upper,clf5304_LR_lower  
-
-
-
-
-
-
 
 def generate_node_off_classifiers(dataDict,region = "region"):
   off_classifiers = []

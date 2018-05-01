@@ -481,7 +481,7 @@ def main():
     w.pack()
     drawSpace(w);
     tksupport.install(root)
-    reactor.listenTCP(8001, RoomLocatorFactory(w))
+    reactor.listenTCP(8040, RoomLocatorFactory(w))
     reactor.run()
 
 if __name__ == '__main__':
