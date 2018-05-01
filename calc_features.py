@@ -215,12 +215,6 @@ def generate_room_specific_classifiers(dataDict,node = -1, given = "room"):
     print "LR - given 5304_lower score: ", clf5304_LR_lower.score(testX,testY)
     return clf5300_LR,clf5302_LR_upper,clf5302_LR_lower,clf5304_LR_upper,clf5304_LR_lower  
 
-
-
-
-
-
-
 def generate_node_off_classifiers(dataDict,region = "region"):
   off_classifiers = []
   for node in xrange(6):
