@@ -140,6 +140,7 @@ class RoomLocator(LineReceiver):
         b = c1.blue+c2.blue;
 
         return Color((r, g, b))
+
     def process_buffer(self,buffer):
         timestamp = []
         rssi_values = []
@@ -181,26 +182,26 @@ class RoomLocator(LineReceiver):
                                                 self.clf_node_off_distributed, "dist"); 
 
 
-            ########################################################
-            # test tomorro
-            # if (user.current_region == "5304_lower_right" and user.current_region_d == "5304_lower_right"):
-            #    user.current_region = "5304_lower_right";
-            # else:
-            #    user.current_region = user.current_region_c
 
             self.pred[self.user_id][user.i] = (user.current_region)
             self.pred_d[self.user_id][user.i] = (user.current_region_d)
             self.pred_c[self.user_id][user.i] = (user.current_region_c)
+            
+            total = self.pred[self.user_id] +self.pred_d[self.user_id] + self.pred_c[self.user_id]
+
             if room == "5302":
                 total = self.pred[self.user_id] +self.pred_d[self.user_id] 
+            # if room == "5304":
+                # total = self.pred[self.user_id] +self.pred_d[self.user_id] + self.pred_c[self.user_id]
+
             if (self.user_id == 0):
                 print "User Zero:"
                 print "Pred Al:      ", max(self.pred[self.user_id], key=self.pred[self.user_id].count), self.pred[self.user_id]
                 print "Pred Central: ", max(self.pred_c[self.user_id], key=self.pred_c[self.user_id].count), self.pred_c[self.user_id]
                 print "Pred Distrib: ", max(self.pred_d[self.user_id], key=self.pred_d[self.user_id].count), self.pred_d[self.user_id]
                 print "Most Commom:  ", max(total, key=total.count)
-                if "5302_upper_left" in total:
-                    print "Ignore most common: In 5302_upper_left"
+                # if "5302_upper_left" in total:
+                    # print "Ignore most common: In 5302_upper_left"
                 print "____________"
 
 
@@ -209,6 +210,10 @@ class RoomLocator(LineReceiver):
 
             #pred_list = self.pred[self.user_id] + self.pred_d[self.user_id] + self.pred_c[self.user_id]
             user.current_region = max(total, key=total.count)
+            if room == "5302" and "5302_lower_right" in total:
+                user.current_region = "5302_lower_right";
+
+
             if user.current_region != '':
                 #user.clearPrevious(self.factory.canvas);
                 #user.drawCurrent(self.factory.canvas);
@@ -225,32 +230,31 @@ class RoomLocator(LineReceiver):
     def connectionMade(self):
         print "hello"
         # self.factory was set by the factory's default buildProtocol:
-        # self.transport.write("connected to Server" + '\r\n')
-        # self.transport.loseConnection()
 
     def updateCanvas(self):
         user1 = self.factory.user_list[0];
         user2 = self.factory.user_list[1];
 
-        for location in positions:
-            index = names.index(location);
-            if ((location in user1.path_q) and (location in user2.path_q)):
-                user1_index = user1.path_q.index(location);
-                user2_index = user2.path_q.index(location);
-                user1_color = user1.colors[user1_index];
-                user2_color = user2.colors[user2_index];
-                new_color = self.colorBlend(user1_color, user2_color);
-                w.itemconfig(location, fill=str(new_color.hex));
-            elif (location in user1.path_q):
-                user1_index = user1.path_q.index(location);
-                user1_color = user1.colors[user1_index];
-                w.itemconfig(location, fill=str(user1_color.hex));
-            elif (location in user2.path_q):
-                user2_index = user2.path_q.index(location);
-                user2_color = user2.colors[user2_index];
-                w.itemconfig(location, fill=str(user2_color.hex));
-            else: 
-                w.itemconfig(location, fill='cornsilk2');
+        for location in names:
+            if location != "":
+                index = names.index(location);
+                if ((location in user1.path_q) and (location in user2.path_q)):
+                    user1_index = list(user1.path_q).index(location);
+                    user2_index = list(user2.path_q).index(location);
+                    user1_color = user1.colors[user1_index];
+                    user2_color = user2.colors[user2_index];
+                    new_color = self.colorBlend(user1_color, user2_color);
+                    self.factory.canvas.itemconfig(positions[index], fill=str(new_color.hex));
+                elif (location in user1.path_q):
+                    user1_index = list(user1.path_q).index(location);
+                    user1_color = user1.colors[user1_index];
+                    self.factory.canvas.itemconfig(positions[index], fill=str(user1_color.hex));
+                elif (location in user2.path_q):
+                    user2_index = list(user2.path_q).index(location);
+                    user2_color = user2.colors[user2_index];
+                    self.factory.canvas.itemconfig(positions[index], fill=str(user2_color.hex));
+                else: 
+                    self.factory.canvas.itemconfig(positions[index], fill='cornsilk2');
 
 class RoomLocatorFactory(Factory):
     # This will be used by the default buildProtocol to create new protocols:
@@ -261,6 +265,7 @@ class RoomLocatorFactory(Factory):
         self.verbose = verbose;
         self.user_color_list = [ [Color(hex='#ff2a1a'),Color(hex='#f66340'),Color(hex='#f09063'),Color(hex='#edb284'),Color(hex='#eccba2')],
                                  [Color(hex='#103ffb'),Color(hex='#38baf3'),Color(hex='#5dedd1'),Color(hex='#7feba0'),Color(hex='#aeea9f')] ]
+        self.user_color_list = [self.user_color_list[0][::-1], self.user_color_list[1][::-1]]                   
         self.user_list = [User(0, self.user_color_list[0]), User(1, self.user_color_list[1])];
 
 class User():
@@ -343,7 +348,7 @@ class User():
             return room, self.current_region_c;
 
     def addPath(self):
-        path_q.append(self.current_region)
+        self.path_q.append(self.current_region)
         # if (self.current_region != self.previous_region):
             # self.path.append(self.current_region);
 
@@ -471,7 +476,7 @@ def main():
     w.pack()
     drawSpace(w);
     tksupport.install(root)
-    reactor.listenTCP(8050, RoomLocatorFactory(w))
+    reactor.listenTCP(8001, RoomLocatorFactory(w))
     reactor.run()
 
 if __name__ == '__main__':

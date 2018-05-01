@@ -15,7 +15,9 @@ from collections import Counter
 
 KNN_POSSIBLE_VERSIONS = ["all","distributed","centralized"]
 
-KNN_VERSION = "all"
+# KNN_VERSION = "all"
+# KNN_VERSION = "distributed"
+KNN_VERSION = "centralized"
 
 
 #### facilitate programming between Project Memebers
@@ -70,7 +72,7 @@ def generateSets_n0_n3_off(dataDict, granularity = "region", ignore_node = -1):
             minRSSI = min(nodeRSSI);
             maxRSSI = max(nodeRSSI); 
             feat += [mean , median];
-        if (i < 100):
+        if (i < len(data)-1):
           trainX.append(feat);
           trainY.append(data_pos);
         else:
@@ -118,7 +120,7 @@ def generateSets(dataDict, granularity = "region", ignore_node = -1):
           minRSSI = min(nodeRSSI);
           maxRSSI = max(nodeRSSI); 
           feat += [mean , median]
-        if (i < 100):#len(data)-1):
+        if (i < len(data)-1):
         # if (i < 100):
           trainX.append(feat);
           trainY.append(data_pos);
@@ -343,42 +345,42 @@ def main():
   print "knn - room"
   print clf.score(testX,testY)
 
-  correct5300 = 0
-  total5300 = 0
-  correct5302 = 0
-  total5302 = 0
-  correct5304 = 0
-  total5304 = 0
-  for event,result in zip(testX,testY_full):
-    event = [event]
-    room = clf.predict(event)[0];
-    if room == "5300":
-      pred = clf5300.predict(event);
-      if pred == result:
-        correct5300 +=1;
-      total5300 +=1;
-    elif room == "5302":
-      pred =clf5302.predict(event);
-      if pred == result:
-        correct5302 +=1;
-      total5302 +=1;
-    elif room == "5304":
-      pred = clf5304.predict(event);
-      if pred == result:
-        correct5304 +=1;
-      total5304 +=1;
-  print "---------------"
-  print "5300"
-  print "correct: ",correct5300, "total: ",total5300
-  print "accuracy: ", correct5300*100/float(total5300)
-  print "---------------"
-  print "5302"
-  print "correct: ",correct5302, "total: ",total5302
-  print "accuracy: ", correct5302*100/float(total5302)
-  print "---------------"
-  print "5304"
-  print "correct: ",correct5304, "total: ",total5304
-  print "accuracy: ", correct5304*100/float(total5304)
+  # correct5300 = 0
+  # total5300 = 0
+  # correct5302 = 0
+  # total5302 = 0
+  # correct5304 = 0
+  # total5304 = 0
+  # for event,result in zip(testX,testY_full):
+  #   event = [event]
+  #   room = clf.predict(event)[0];
+  #   if room == "5300":
+  #     pred = clf5300.predict(event);
+  #     if pred == result:
+  #       correct5300 +=1;
+  #     total5300 +=1;
+  #   elif room == "5302":
+  #     pred =clf5302.predict(event);
+  #     if pred == result:
+  #       correct5302 +=1;
+  #     total5302 +=1;
+  #   elif room == "5304":
+  #     pred = clf5304.predict(event);
+  #     if pred == result:
+  #       correct5304 +=1;
+  #     total5304 +=1;
+  # print "---------------"
+  # print "5300"
+  # print "correct: ",correct5300, "total: ",total5300
+  # print "accuracy: ", correct5300*100/float(total5300)
+  # print "---------------"
+  # print "5302"
+  # print "correct: ",correct5302, "total: ",total5302
+  # print "accuracy: ", correct5302*100/float(total5302)
+  # print "---------------"
+  # print "5304"
+  # print "correct: ",correct5304, "total: ",total5304
+  # print "accuracy: ", correct5304*100/float(total5304)
   # correct = 0
   # total = 0
   # print len(testX)
@@ -424,61 +426,61 @@ def main():
   joblib.dump(clf, str.format('knn_n0_n3_off_{}.pkl',KNN_VERSION))
 
 
-  clf5300_UL,clf5302_UL,clf5304_UL = generate_room_specific_classifiers(rawData,-1,"UL");   
-  clf5300_LR,clf5302_LR_upper,clf5302_LR_lower,clf5304_LR_upper,clf5304_LR_lower   = generate_room_specific_classifiers(rawData,-1,"UL-LR"); 
+  # clf5300_UL,clf5302_UL,clf5304_UL = generate_room_specific_classifiers(rawData,-1,"UL");   
+  # clf5300_LR,clf5302_LR_upper,clf5302_LR_lower,clf5304_LR_upper,clf5304_LR_lower   = generate_room_specific_classifiers(rawData,-1,"UL-LR"); 
 
-  correct5300 = 0
-  total5300 = 0
-  correct5302 = 0
-  total5302 = 0
-  correct5304 = 0
-  total5304 = 0
-  for event,result in zip(tXroom,testY_full):
-    event = [event]
-    room = clfROOM.predict(event)[0];
-    if room == "5300":
-      pred = clf5300_UL.predict(event);
-      print pred[0], "  vs.  ", result
+  # correct5300 = 0
+  # total5300 = 0
+  # correct5302 = 0
+  # total5302 = 0
+  # correct5304 = 0
+  # total5304 = 0
+  # for event,result in zip(tXroom,testY_full):
+  #   event = [event]
+  #   room = clfROOM.predict(event)[0];
+  #   if room == "5300":
+  #     pred = clf5300_UL.predict(event);
+  #     print pred[0], "  vs.  ", result
 
-      if pred[0] == result:
-        correct5300 +=1;
-      total5300 +=1;
+  #     if pred[0] == result:
+  #       correct5300 +=1;
+  #     total5300 +=1;
 
-    elif room == "5302":
-      pred =clf5302_UL.predict(event);
-      print pred[0], "  vs.  ", result
+  #   elif room == "5302":
+  #     pred =clf5302_UL.predict(event);
+  #     print pred[0], "  vs.  ", result
 
-      if "lower" in pred[0]:
-        pred =clf5302_LR_lower.predict(event);       
-        print pred[0], "  vs.  ", result
-        if pred[0] == result:
-          correct5302 +=1;
-      if "upper" in pred[0]:
-        pred =clf5302_LR_upper.predict(event);       
-        print pred[0], "  vs.  ", result    
-        if pred[0] == result:
-          correct5302 +=1;
-      total5302 +=1;
-    elif room == "5304":
-      pred = clf5304_UL.predict(event);
-      print pred[0], "  vs.  ", result
+  #     if "lower" in pred[0]:
+  #       pred =clf5302_LR_lower.predict(event);       
+  #       print pred[0], "  vs.  ", result
+  #       if pred[0] == result:
+  #         correct5302 +=1;
+  #     if "upper" in pred[0]:
+  #       pred =clf5302_LR_upper.predict(event);       
+  #       print pred[0], "  vs.  ", result    
+  #       if pred[0] == result:
+  #         correct5302 +=1;
+  #     total5302 +=1;
+  #   elif room == "5304":
+  #     pred = clf5304_UL.predict(event);
+  #     print pred[0], "  vs.  ", result
 
-      if pred[0] in result:
-        correct5304 +=1;
-      total5304 +=1;
+  #     if pred[0] in result:
+  #       correct5304 +=1;
+  #     total5304 +=1;
+  # # print "---------------"
+  # # print "5300"
+  # # print "correct: ",correct5300, "total: ",total5300
+  # # print "accuracy: ", correct5300*100/float(total5300)
   # print "---------------"
-  # print "5300"
-  # print "correct: ",correct5300, "total: ",total5300
-  # print "accuracy: ", correct5300*100/float(total5300)
-  print "---------------"
-  print "5302UL"
-  print "correct: ",correct5302, "total: ",total5302
-  print "accuracy: ", correct5302*100/float(total5302)
-  print "---------------"
-  print "5304UL"
-  print "correct: ",correct5304, "total: ",total5304
-  print "accuracy: ", correct5304*100/float(total5304)
-  # joblib.dump(clf, str.format('knn_region_{}.pkl',KNN_VERSION) )
+  # print "5302UL"
+  # print "correct: ",correct5302, "total: ",total5302
+  # print "accuracy: ", correct5302*100/float(total5302)
+  # print "---------------"
+  # print "5304UL"
+  # print "correct: ",correct5304, "total: ",total5304
+  # print "accuracy: ", correct5304*100/float(total5304)
+  # # joblib.dump(clf, str.format('knn_region_{}.pkl',KNN_VERSION) )
 
 if __name__ == '__main__':
   main()
