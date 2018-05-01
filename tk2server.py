@@ -18,6 +18,8 @@ import os
 import random
 import time
 from collections import deque
+from colorutils import Color
+
 H_5300 = 96
 H_5302 = 325
 W_5302 = 230
@@ -34,6 +36,7 @@ wean5300_names = ['5300_lower','5300_middle','5300_upper']
 wean5302_names = ['5302_lower_right','5302_lower_left','5302_upper_right','5302_upper_left']
 wean5304_names = ['5304_lower_right','5304_lower_left','5304_upper_right','5304_upper_left']
 names = wean5300_names + wean5302_names + wean5304_names
+#user_colors = [Color(255,42,26), Color(16,63,251)];
 
 #wean5304_names = ['5304_lower_left','5304_lower_right', '5304_upper_left','5304_upper_right']
 
@@ -143,7 +146,6 @@ class RoomLocator(LineReceiver):
     def dataReceived(self, data):
         if data != '':
             self.data = self.process_buffer(str(data));
-            user_colors = ['red', 'blue'];
             self.user_id = self.data[0];
             user = self.factory.user_list[self.user_id]
             self.timestamp = self.data[1];
@@ -200,22 +202,47 @@ class RoomLocator(LineReceiver):
             #pred_list = self.pred[self.user_id] + self.pred_d[self.user_id] + self.pred_c[self.user_id]
             user.current_region = max(total, key=total.count)
             if user.current_region != '':
-                user.clearPrevious(self.factory.canvas);
-                user.drawCurrent(self.factory.canvas, user_colors);
+                #user.clearPrevious(self.factory.canvas);
+                #user.drawCurrent(self.factory.canvas);
                 user.addPath();
+                self.updateCanvas();
                 user.previous_region = user.current_region;
                 user.previous_region_d = user.current_region_d;
                 user.previous_region_c = user.current_region_c; 
 
-                if (self.factory.user_list[0].current_region == self.factory.user_list[1].current_region):
-                    index = names.index(user.current_region);
-                    self.factory.canvas.itemconfig(positions[index], fill='DarkOrchid4');
+                # if (self.factory.user_list[0].current_region == self.factory.user_list[1].current_region):
+                #     index = names.index(user.current_region);
+                #     self.factory.canvas.itemconfig(positions[index], fill='DarkOrchid4');
 
     def connectionMade(self):
         print "hello"
         # self.factory was set by the factory's default buildProtocol:
         # self.transport.write("connected to Server" + '\r\n')
         # self.transport.loseConnection()
+
+    def updateCanvas(self):
+        user1 = self.factory.user_list[0];
+        user2 = self.factory.user_list[1];
+
+        for location in positions:
+            index = names.index(location);
+            if ((location in user1.deque) and (location in user2.deque)):
+                user1_index = user1.deque.index(location);
+                user2_index = user2.deque.index(location);
+                user1_color = user1.colors[user1_index];
+                user2_color = user2.colors[user2_index];
+                new_color = self.colorBlend(user1_color, user2_color);
+                w.itemconfig(location, fill=str(new_color.hex));
+            elif (location in user1.deque):
+                user1_index = user1.deque.index(location);
+                user1_color = user1.colors[user1_index];
+                w.itemconfig(location, fill=str(user1_color.hex));
+            elif (location in user2.deque):
+                user2_index = user2.deque.index(location);
+                user2_color = user2.colors[user2_index];
+                w.itemconfig(location, fill=str(user2_color.hex));
+            else: 
+                w.itemconfig(location, fill='cornsilk2');
 
 class RoomLocatorFactory(Factory):
     # This will be used by the default buildProtocol to create new protocols:
@@ -224,10 +251,11 @@ class RoomLocatorFactory(Factory):
         self.canvas = canvas;
         self.numUsers = numUsers or 1;
         self.verbose = verbose;
-        self.user_list = [User(0), User(1)];
+        self.user_color_list = [[], []];
+        self.user_list = [User(0, self.user_color_list[0]), User(1, self.user_color_list[1])];
 
 class User():
-    def __init__(self, number):
+    def __init__(self, number, colors):
         self.path_q = deque(maxlen=5)
         self.number = number;
         # self.path = []
@@ -241,6 +269,7 @@ class User():
         self.blacklist_count_d = 0;
         self.blacklist_count_c = 0;
         self.i = 0;
+        self.colors = colors;
 
     def predictRegion(self, rssi_values, blacklist_dict, node_off, clf_room, clf5300, clf5302, 
                       clf5304, clf_node_off, region="all"):
@@ -306,7 +335,6 @@ class User():
 
     def addPath(self):
         path_q.append(self.current_region);
-        
         # if (self.current_region != self.previous_region):
             # self.path.append(self.current_region);
 
@@ -322,10 +350,9 @@ class User():
 
             w.itemconfig(positions[index], fill='cornsilk2');
 
-    def drawCurrent(self, w, user_colors):
+    def drawCurrent(self,w):
         index = names.index(self.current_region);
-
-        w.itemconfig(positions[index], fill=user_colors[self.number]);
+        w.itemconfig(positions[index], fill=self.colors[0]);
 
 # endpoint = TCP4ServerEndpoint(reactor, 8007)
 # en/dpoint.listen(QOTDFactory("configurable quote"))
@@ -462,7 +489,7 @@ def main():
                                 # clf_n3_off_centralized, clf_n4_off_centralized, clf_n5_off_centralized]
 
     tksupport.install(root)
-    reactor.listenTCP(8025, RoomLocatorFactory(w))
+    reactor.listenTCP(8050, RoomLocatorFactory(w))
     reactor.run()
 
 if __name__ == '__main__':
