@@ -16,6 +16,7 @@ import numpy as np
 from sklearn.externals import joblib
 import os
 import random
+from colorutils import Color
 import time
 
 H_5300 = 96
@@ -190,13 +191,33 @@ class User():
 
     def drawCurrent(self, w, user_colors):
         index = names.index(self.current_region);
-        w.itemconfig(positions[index], fill=user_colors[self.number]);
+        c1_index = 0
+        c2_index = 4
+        new_color = color_blend(user_colors, c1_index, c2_index);
+        w.itemconfig(positions[index], fill=str(new_color.hex));
 
 # endpoint = TCP4ServerEndpoint(reactor, 8007)
 # en/dpoint.listen(QOTDFactory("configurable quote"))
 # reactor.run()
 
-def drawSpace(w):
+
+def color_blend(user_colors, c1_index, c2_index):
+    c1 = user_colors[0][c1_index];
+    c2 = user_colors[1][c2_index];
+    difference = abs(c1_index - c2_index) + 2.5; 
+    total = 5
+    if (c1_index > c2_index):
+        r = min(255, c1.red*difference/total+ c2.red*(total-difference)/total);
+        g = min(255, c1.green*difference/total+ c2.green*(total-difference)/total);
+        b = min(255, c1.blue*difference/total+ c2.blue*(total-difference)/total);
+    else:
+        r = min(255, c2.red*difference/total+ c1.red*(total-difference)/total);
+        g = min(255, c2.green*difference/total+ c1.green*(total-difference)/total);
+        b = min(255, c2.blue*difference/total+ c1.blue*(total-difference)/total);
+    return Color((r, g, b))
+
+
+def drawSpace(w, user_colors):
     global positions
     increment = 1 #WINDOW_HEIGHT/700
     offset5300 = WINDOW_WIDTH/8, WINDOW_HEIGHT/8
@@ -209,6 +230,7 @@ def drawSpace(w):
     offset5304 = (offset5302[0] + width5302 + WALL_WIDTH), offset5300[1] + height5300 +WALL_WIDTH
     width5300 = increment*(1.5*width5302+width5304+4*WALL_WIDTH)
 
+
     corridor = w.create_rectangle(offset5300[0], offset5300[1],  offset5300[0]+width5300,
                                   offset5300[1]+height5300,fill='cornsilk2')
     wean5302 = w.create_rectangle(offset5302[0], offset5302[1],  offset5302[0]+width5302,
@@ -216,16 +238,36 @@ def drawSpace(w):
     wean5304 = w.create_rectangle(offset5304[0], offset5304[1],  offset5304[0]+width5304,
                                   offset5304[1]+height5304,fill='cornsilk2')
 
+    c1_index = 0
+    c2_index = 0
+    new_color = color_blend(user_colors, c2_index, c1_index);
+
     wean5300_positions[0] = w.create_rectangle(offset5300[0], offset5300[1], (offset5300[0]+(width5300/3)),
-                                              (offset5300[1]+(height5300)) , fill='cornsilk2', outline='black')
+                                              (offset5300[1]+(height5300)) ,fill=str(new_color.hex), outline='black')
+
+    c2_index = 1
+    new_color = color_blend(user_colors, c2_index, c1_index);
+
     wean5300_positions[1] = w.create_rectangle((offset5300[0]+width5300/3), offset5300[1],  (offset5300[0]+(2*width5300/3)),
-                                              (offset5300[1]+(height5300)) , fill='cornsilk2', outline='black')
+                                              (offset5300[1]+(height5300)) ,fill=str(new_color.hex), outline='black')
+
+    c2_index = 2
+    new_color = color_blend(user_colors, c2_index, c1_index);
+
     wean5300_positions[2] = w.create_rectangle((offset5300[0]+2*width5300/3), offset5300[1],  (offset5300[0]+(width5300)),
-                                              (offset5300[1]+(height5300)) , fill='cornsilk2',outline='black')
+                                              (offset5300[1]+(height5300)) ,fill=str(new_color.hex),outline='black')
+
+    c2_index = 3
+    new_color = color_blend(user_colors, c2_index, c1_index);
+
     wean5302_positions[0] = w.create_rectangle(offset5302[0], offset5302[1],  (offset5302[0]+(width5302)/2),
-                                              (offset5302[1]+(height5302)/2) , fill='cornsilk2', outline='black')
+                                              (offset5302[1]+(height5302)/2) ,fill=str(new_color.hex), outline='black')
+
+    c2_index = 4
+    new_color = color_blend(user_colors, c2_index, c1_index);
+
     wean5302_positions[1] = w.create_rectangle((offset5302[0]+width5302/2), offset5302[1],  (offset5302[0]+(width5302)),
-                                              (offset5302[1]+(height5302)/2) , fill='cornsilk2',outline='black')
+                                              (offset5302[1]+(height5302)/2) ,fill=str(new_color.hex),outline='black')
     wean5302_positions[2] = w.create_rectangle(offset5302[0], (offset5302[1]+(height5302)/2), (offset5302[0]+(width5302)/2),
                                               (offset5302[1]+(height5302)) , fill='cornsilk2',outline='black')
     wean5302_positions[3] = w.create_rectangle(offset5302[0]+width5302/2, offset5302[1]+(height5302)/2, (offset5302[0]+(width5302)),
@@ -287,9 +329,11 @@ def create_blacklist():
 def trackPerson(root):
     w = Canvas(root, width=WINDOW_WIDTH, height=WINDOW_HEIGHT,background='SkyBlue4')
     w.pack()
-    drawSpace(w);
+    user_colors = [ [Color(hex='#ff2a1a'),Color(hex='#f66340'),Color(hex='#f09063'),Color(hex='#edb284'),Color(hex='#eccba2')],
+                  [Color(hex='#103ffb'),Color(hex='#38baf3'),Color(hex='#5dedd1'),Color(hex='#7feba0'),Color(hex='#aeea9f')] ]
 
-    user_colors = ['red', 'blue'];
+    drawSpace(w, user_colors);
+
     blacklist_dict = create_blacklist();
     clf_node_off_all = [clf_n0_off_all, clf_n1_off_all, clf_n2_off_all, clf_n3_off_all,
                         clf_n4_off_all, clf_n5_off_all]
@@ -309,68 +353,68 @@ def trackPerson(root):
     node_off_count = [0, 0, 0, 0, 0, 0];
     count = 0;
     user_num = 0;
-    while (1): 
-        time.sleep(0.25);
-        count +=1;
-        #receive data from server
-        #call roomLocator instance
-        #find line received for rssi values 
-        #user 1 or user 2? roomLocator.user; 
-        if (user_num == 1): 
-            user_num = 0; #roomLocator.user; 
-            rssi_values = [[-50, -60, -50, -59, -48, -41, -49, -89, -88, -90, -95, -96]];
-        else:
-            user_num = 1;
-            rssi_values = [[-90, -90, -80, -89, -78, -71, -69, -79, -78, -70, -65, -60]];
+    #while (1): 
+    time.sleep(0.25);
+    count +=1;
+    #receive data from server
+    #call roomLocator instance
+    #find line received for rssi values 
+    #user 1 or user 2? roomLocator.user; 
+    if (user_num == 1): 
+        user_num = 0; #roomLocator.user; 
+        rssi_values = [[-50, -60, -50, -59, -48, -41, -49, -89, -88, -90, -95, -96]];
+    else:
+        user_num = 1;
+        rssi_values = [[-90, -90, -80, -89, -78, -71, -69, -79, -78, -70, -65, -60]];
 
-        user = user_list[user_num]; 
-        #node off depends on values received from either user
-        for val in xrange((len(rssi_values[0])/2)):
-            if (rssi_values[0][val*2] == -150):
-                if (node_off_count[val] > 3):
-                    node_off = val;
-                    break;
-                else:
-                    node_off_count[val] += 1; 
+    user = user_list[user_num]; 
+    #node off depends on values received from either user
+    for val in xrange((len(rssi_values[0])/2)):
+        if (rssi_values[0][val*2] == -150):
+            if (node_off_count[val] > 3):
+                node_off = val;
+                break;
             else:
-                node_off_count[val] = 0;
-                node_off = -1; 
+                node_off_count[val] += 1; 
+        else:
+            node_off_count[val] = 0;
+            node_off = -1; 
 
-        # check if one of the nodes is off
-        # choose the correct clf
+    # check if one of the nodes is off
+    # choose the correct clf
 
-        current_region = user.predictRegion(rssi_values, blacklist_dict, node_off, clf_room_all, clf5300_all, 
-                                           clf5302_all, clf5304_all, clf_node_off_all); 
-        current_region_c = user.predictRegion(rssi_values, blacklist_dict, node_off, clf_room_centralized,
-                                             clf5300_centralized, clf5302_centralized, clf5304_centralized, 
-                                             clf_node_off_centralized, "center"); 
-        current_region_d = user.predictRegion(rssi_values, blacklist_dict, node_off, clf_room_distributed, 
-                                             clf5300_distributed, clf5302_distributed, clf5304_distributed,
-                                             clf_node_off_distributed, "dist"); 
+    current_region = user.predictRegion(rssi_values, blacklist_dict, node_off, clf_room_all, clf5300_all, 
+                                       clf5302_all, clf5304_all, clf_node_off_all); 
+    current_region_c = user.predictRegion(rssi_values, blacklist_dict, node_off, clf_room_centralized,
+                                         clf5300_centralized, clf5302_centralized, clf5304_centralized, 
+                                         clf_node_off_centralized, "center"); 
+    current_region_d = user.predictRegion(rssi_values, blacklist_dict, node_off, clf_room_distributed, 
+                                         clf5300_distributed, clf5302_distributed, clf5304_distributed,
+                                         clf_node_off_distributed, "dist"); 
 
-        pred[user_num][user.i] = (current_region)
-        pred_d[user_num][user.i] = (current_region_d)
-        pred_c[user_num][user.i] = (current_region_c)
-        user.i = (user.i+1)%3
-        # I am overwriting the room in this block just for testing 
-        if (user_num == 1): 
-            user.current_region = random.choice(wean5304_names);
+    pred[user_num][user.i] = (current_region)
+    pred_d[user_num][user.i] = (current_region_d)
+    pred_c[user_num][user.i] = (current_region_c)
+    user.i = (user.i+1)%3
+    # I am overwriting the room in this block just for testing 
+    if (user_num == 1): 
+        user.current_region = random.choice(wean5304_names);
 
-        else: 
-            user.current_region = random.choice(wean5302_names);
+    else: 
+        user.current_region = random.choice(wean5302_names);
 
-        #print user.number, user.current_region;
-        user.clearPrevious(w);
-        user.drawCurrent(w, user_colors);
+    #print user.number, user.current_region;
+    #user.clearPrevious(w);
+    #user.drawCurrent(w, user_colors);
 
-        user.addPath();
-        user.previous_region = user.current_region;
-        user.previous_region_d = user.current_region_d;
-        user.previous_region_c = user.current_region_c;
+    user.addPath();
+    user.previous_region = user.current_region;
+    user.previous_region_d = user.current_region_d;
+    user.previous_region_c = user.current_region_c;
 
-        if (user_list[0].current_region == user_list[1].current_region):
-            index = names.index(user.current_region);
-            w.itemconfig(positions[index], fill='DarkOrchid4');
+    # if (user_list[0].current_region == user_list[1].current_region):
+    #     index = names.index(user.current_region);
+    #     w.itemconfig(positions[index], fill='DarkOrchid4');
 
 #########################################################################3
 

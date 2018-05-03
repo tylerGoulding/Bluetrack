@@ -72,8 +72,6 @@ names = wean5300_names + wean5302_names + wean5304_names
 # clf_n4_off_centralized = joblib.load('knn_region_node_4_off_centralized.pkl')
 # clf_n5_off_centralized = joblib.load('knn_region_node_5_off_centralized.pkl')
 
-
-
 class RoomLocator(LineReceiver):
     delimiter = '\n'
     def __init__(self):
@@ -187,10 +185,10 @@ class RoomLocator(LineReceiver):
             self.pred_d[self.user_id][user.i] = (user.current_region_d)
             self.pred_c[self.user_id][user.i] = (user.current_region_c)
             
-            total = self.pred[self.user_id] +self.pred_d[self.user_id] + self.pred_c[self.user_id]
+            total = self.pred[self.user_id] + self.pred_d[self.user_id] + self.pred_c[self.user_id]
 
             if room == "5302":
-                total = self.pred[self.user_id] +self.pred_d[self.user_id] 
+                total = self.pred[self.user_id] + self.pred_d[self.user_id] 
             # if room == "5304":
                 # total = self.pred[self.user_id] +self.pred_d[self.user_id] + self.pred_c[self.user_id]
 
@@ -212,7 +210,6 @@ class RoomLocator(LineReceiver):
             user.current_region = max(total, key=total.count)
             if room == "5302" and "5302_lower_right" in total:
                 user.current_region = "5302_lower_right";
-
 
             if user.current_region != '':
                 #user.clearPrevious(self.factory.canvas);
@@ -476,7 +473,7 @@ def main():
     w.pack()
     drawSpace(w);
     tksupport.install(root)
-    reactor.listenTCP(8040, RoomLocatorFactory(w))
+    reactor.listenTCP(8001, RoomLocatorFactory(w))
     reactor.run()
 
 if __name__ == '__main__':
