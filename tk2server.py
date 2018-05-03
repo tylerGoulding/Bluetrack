@@ -211,13 +211,8 @@ class RoomLocator(LineReceiver):
             self.pred[self.user_id][user.i] = (user.current_region)
             self.pred_d[self.user_id][user.i] = (user.current_region_d)
             self.pred_c[self.user_id][user.i] = (user.current_region_c)
-<<<<<<< HEAD
-            
-            total = self.pred[self.user_id] + self.pred_d[self.user_id] + self.pred_c[self.user_id]
-=======
 
-            total = self.pred[self.user_id] +self.pred_d[self.user_id] + self.pred_c[self.user_id]
->>>>>>> origin/master
+            total = self.pred[self.user_id] + self.pred_d[self.user_id] + self.pred_c[self.user_id]
 
             if room == "5302":
                 total = self.pred[self.user_id] + self.pred_d[self.user_id] 
@@ -265,6 +260,7 @@ class RoomLocator(LineReceiver):
     def updateCanvas(self):
         user1 = self.factory.user_list[0];
         user2 = self.factory.user_list[1];
+        blend_color_list = self.factory.blend_color_list;
         # if not (user1.checkValid()):
         #     user1.resetUser();
         # if not (user2.checkValid()):
@@ -294,9 +290,9 @@ class RoomLocator(LineReceiver):
                 if ((location in user1.path_q) and (location in user2.path_q)):
                     user1_index = len(list(user1.path_q)) - list(user1.path_q)[::-1].index(location) - 1;
                     user2_index = len(list(user2.path_q)) - list(user2.path_q)[::-1].index(location) - 1;
-                    user1_color = user1.colors[user1_start_color + user1_index];
-                    user2_color = user2.colors[user2_start_color + user2_index];
-                    new_color = self.color_blend(user1_color, user2_color);
+                    new_color = blend_color_list[min(user1_start_color + user1_index, user1_start_color+user1_index)];
+                    #user2_color = user2.colors[user2_start_color + user2_index];
+                    #new_color = self.color_blend(user1_color, user2_color);
                     self.factory.canvas.itemconfig(positions[index], fill=str(new_color.hex));
                 elif (location in user1.path_q):
                     user1_index = len(list(user1.path_q)) - list(user1.path_q)[::-1].index(location) - 1;
@@ -310,8 +306,6 @@ class RoomLocator(LineReceiver):
                 else: 
                     self.factory.canvas.itemconfig(positions[index], fill='cornsilk2');
 
-
-
 class RoomLocatorFactory(Factory):
     # This will be used by the default buildProtocol to create new protocols:
     protocol = RoomLocator
@@ -320,12 +314,14 @@ class RoomLocatorFactory(Factory):
         self.clearing = 0
         self.numUsers = numUsers or 1;
         self.verbose = verbose;
-        self.user_color_list = [ [Color(hex='#ff2a1a'),Color(hex='#f66340'),Color(hex='#f09063'),Color(hex='#edb284'),Color(hex='#eccba2')],
-                                 [Color(hex='#103ffb'),Color(hex='#38baf3'),Color(hex='#5dedd1'),Color(hex='#7feba0'),Color(hex='#aeea9f')] ]
-        self.user_color_list = [self.user_color_list[0][::-1], self.user_color_list[1][::-1]]                   
+        self.user_color_list = [[Color(hex='#ff2a1a'),Color(hex='#f66340'),Color(hex='#f09063'),Color(hex='#edb284'),Color(hex='#eccba2')],
+                                 [Color(hex='#021e97'), Color(hex='#032bc9'),Color(hex='#0435fb'),Color(hex='#365efc'),Color(hex='#6886fd')] ]
+        self.user_color_list = [self.user_color_list[0][::-1], self.user_color_list[1][::-1]]
+        self.blend_color_list = [Color((236, 198, 236)), Color((210, 121, 210)), Color((153, 51, 153)), Color((128, 0, 128)), Color((102, 0, 102))]
         self.user_list = [User(0, self.user_color_list[0]), User(1, self.user_color_list[1])];
         self.PortUsers = []
-        def clearIfNec():
+
+    def clearIfNec():
             #print "!!!!!!!!!!!checking if Valid!!!!!"
             for user in self.user_list:
                 currentMillis = int(round(time.time() * 1000));
@@ -337,9 +333,10 @@ class RoomLocatorFactory(Factory):
                 print "User 0 is detected off"
                 self.clearing = 0;
                 self.updateCanvas();
-                    # protocol.updateCanvas();
+                # protocol.updateCanvas();
         self.looping_call = task.LoopingCall(clearIfNec)
         self.looping_call.start(3)
+
     def updateCanvas(self):
         user1 = self.user_list[0];
         user2 = self.user_list[1];
@@ -352,29 +349,15 @@ class RoomLocatorFactory(Factory):
         user1_start_color = 5 - len(user1.path_q);
         user2_start_color = 5 - len(user2.path_q);
 
-        #print "start color from index", user1_start_color;
-        # for i in user1.path_q:
-        #     index = region_names.index(i);
-        #     c = positions[index].coords;
-        #     cords.append(c);
-        # # print cords
-        # for rect in positions:
-        #     self.canvas.itemconfig(positions[index], fill='cornsilk2');
-        # u1_path = list(reversed(list(user1.path_q)))
-        # u2_path = list(reversed(list(user1.path_q)))
-        # for location in reversed(list(user1.path_q)):
-            # if 
-            # self.canvas.itemconfig(positions[index], fill=str(new_color.hex));
-
         for location in region_names:
             if location != "":
                 index = region_names.index(location);
                 if ((location in user1.path_q) and (location in user2.path_q)):
                     user1_index = len(list(user1.path_q)) - list(user1.path_q)[::-1].index(location) - 1;
                     user2_index = len(list(user2.path_q)) - list(user2.path_q)[::-1].index(location) - 1;
-                    user1_color = user1.colors[user1_start_color + user1_index];
-                    user2_color = user2.colors[user2_start_color + user2_index];
-                    new_color = self.color_blend(user1_color, user2_color);
+                    #user1_color = user1.colors[user1_start_color + user1_index];
+                    #user2_color = user2.colors[user2_start_color + user2_index];
+                    new_color = self.blend_color_list[min(user1_start_color + user1_index, user1_start_color+user1_index)];
                     self.canvas.itemconfig(positions[index], fill=str(new_color.hex));
                 elif (location in user1.path_q):
                     user1_index = len(list(user1.path_q)) - list(user1.path_q)[::-1].index(location) - 1;
