@@ -211,13 +211,9 @@ class RoomLocator(LineReceiver):
             self.pred[self.user_id][user.i] = (user.current_region)
             self.pred_d[self.user_id][user.i] = (user.current_region_d)
             self.pred_c[self.user_id][user.i] = (user.current_region_c)
-<<<<<<< HEAD
             
             total = self.pred[self.user_id] + self.pred_d[self.user_id] + self.pred_c[self.user_id]
-=======
 
-            total = self.pred[self.user_id] +self.pred_d[self.user_id] + self.pred_c[self.user_id]
->>>>>>> origin/master
 
             if room == "5302":
                 total = self.pred[self.user_id] + self.pred_d[self.user_id] 

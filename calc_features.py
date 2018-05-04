@@ -17,7 +17,7 @@ KNN_POSSIBLE_VERSIONS = ["all","distributed","centralized"]
 
 # KNN_VERSION = "all"
 # KNN_VERSION = "distributed"
-KNN_VERSION = "distributed"
+KNN_VERSION = "centralized"
 
 #### facilitate programming between Project Memebers
 dirname_tyler = "/Users/Tyler/Documents/GitHub/Bluetrack/"
