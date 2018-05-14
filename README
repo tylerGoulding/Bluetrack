@@ -1,0 +1,29 @@
+Bluetrack 
+by Fatema Almeshqab, Tyler Goulding, Kiwan Maeng
+
+
+The code is broken into 3 sections:
+    server
+    beacon
+    master
+
+
+
+SERVER:
+    Final server code is in bluetrack_final_server.py
+    The server uses the following 3rd party APIs: sklearn, colorutils, numpy, Twisted and Tkinter
+    To run: 
+        python bluetrack_final_server.py
+
+BEACON:
+    The beacons have a bash script that is programmed to execute on boot everytime. 
+    The shell script is under: 
+        beacon_advertisement.sh
+
+MASTER:
+    The master aggregates and sends the values over to the server
+    the code is in bluepyscan.py
+    the 3rd party APIs used are: bluepy
+    to run:
+        sudo bluepyscan.py
+
