@@ -17,7 +17,7 @@ KNN_POSSIBLE_VERSIONS = ["all","distributed","centralized"]
 
 # KNN_VERSION = "all"
 # KNN_VERSION = "distributed"
-KNN_VERSION = "centralized"
+KNN_VERSION = "distributed"
 
 #### facilitate programming between Project Memebers
 dirname_tyler = "/Users/Tyler/Documents/GitHub/Bluetrack/"
@@ -71,7 +71,7 @@ def generateSets_n0_n3_off(dataDict, granularity = "region", ignore_node = -1):
             minRSSI = min(nodeRSSI);
             maxRSSI = max(nodeRSSI); 
             feat += [mean , median];
-        if (i < 40):
+        if (i < len(data)-2):
           trainX.append(feat);
           trainY.append(data_pos);
         else:
@@ -119,7 +119,7 @@ def generateSets(dataDict, granularity = "region", ignore_node = -1):
           minRSSI = min(nodeRSSI);
           maxRSSI = max(nodeRSSI); 
           feat += [mean , median]
-        if (i < 40):
+        if (i < len(data)-2):
         # if (i < 100):
           trainX.append(feat);
           trainY.append(data_pos);

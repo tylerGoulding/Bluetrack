@@ -34,9 +34,9 @@ wean5300_positions = [None,None,None]
 wean5302_positions = [None,None,None,None]
 wean5304_positions = [None,None,None,None]
 positions = [None,None,None,None,None,None,None,None,None,None,None]
-wean5300_region_names = ['5300_lower','5300_middle','5300_upper']
-wean5302_region_names = ['5302_lower_right','5302_lower_left','5302_upper_right','5302_upper_left']
-wean5304_region_names = ['5304_lower_right','5304_lower_left','5304_upper_right','5304_upper_left']
+wean5300_region_names = ['5300_upper','5300_middle','5300_lower']
+wean5302_region_names = ['5302_upper_left', '5302_upper_right', '5302_lower_left','5302_lower_right']
+wean5304_region_names = ['5304_upper_left', '5304_upper_right', '5304_lower_left','5304_lower_right']
 region_names = wean5300_region_names + wean5302_region_names + wean5304_region_names
 #user_colors = [Color(255,42,26), Color(16,63,251)];
 
@@ -196,9 +196,9 @@ class RoomLocator(LineReceiver):
                 else:
                     self.node_off_count[val] = 0;
                     self.node_off = -1; 
-            if (node_off != -1):
+            if (self.node_off != -1):
                 for val in xrange((len(self.RSSIvalues[0])/2)):
-                    if val != node_off:
+                    if val != self.node_off:
                         if (self.RSSIvalues[0][val*2] == -150):
                             if (self.node_off_count[val] > 3):
                                 self.second_node_off = val;
@@ -233,15 +233,15 @@ class RoomLocator(LineReceiver):
             # if room == "5304":
                 # total = self.pred_c[self.user_id]; # +self.pred_d[self.user_id] + self.pred_c[self.user_id]
 
-            if (self.user_id == 0):
-                print "User Zero:"
-                print "Pred Al:      ", max(self.pred[self.user_id], key=self.pred[self.user_id].count), self.pred[self.user_id]
-                print "Pred Central: ", max(self.pred_c[self.user_id], key=self.pred_c[self.user_id].count), self.pred_c[self.user_id]
-                print "Pred Distrib: ", max(self.pred_d[self.user_id], key=self.pred_d[self.user_id].count), self.pred_d[self.user_id]
-                print "Most Common:  ", max(total, key=total.count)
-                # if "5302_upper_left" in total:
-                    # print "Ignore most common: In 5302_upper_left"
-                print "____________"
+            # if (self.user_id == 0):
+            #     print "User Zero:"
+            #     print "Pred Al:      ", max(self.pred[self.user_id], key=self.pred[self.user_id].count), self.pred[self.user_id]
+            #     print "Pred Central: ", max(self.pred_c[self.user_id], key=self.pred_c[self.user_id].count), self.pred_c[self.user_id]
+            #     print "Pred Distrib: ", max(self.pred_d[self.user_id], key=self.pred_d[self.user_id].count), self.pred_d[self.user_id]
+            #     print "Most Common:  ", max(total, key=total.count)
+            #     # if "5302_upper_left" in total:
+            #         # print "Ignore most common: In 5302_upper_left"
+            #     print "____________"
 
 
             user.i = (user.i+1)%3  
@@ -463,7 +463,7 @@ class User():
         else:
             print "Node {} off".format(node_off)
             if second_node_off != -1:
-                print "Node {} off as well".format(node_off)
+                print "Node {} off as well".format(second_node_off)
             if node_off == 0 and second_node_off == 3:
                 print "Two Node off Room prediction: ", self.clf_n0n3_off_all.predict(rssi_values)[0];
             rssi_values = [rssi_values[0][:node_off*2] + rssi_values[0][node_off*2+2:]]
@@ -537,31 +537,45 @@ class User():
 def drawSpace(w):
     global positions
     increment = 1 #WINDOW_HEIGHT/700
-    offset5300 = WINDOW_WIDTH/16, WINDOW_HEIGHT/16
-    height5300 = increment*H_5300
 
-    width5302 = increment*W_5302
-    height5302  = increment*H_5302
-    offset5302 = offset5300[0] + WALL_WIDTH , offset5300[1] + height5300 + WALL_WIDTH
+
+
+    width5310 = increment*W_5302
+    height5310 = increment*H_5302
+    offset5310 = WINDOW_WIDTH/16, WINDOW_HEIGHT/16
+    # wean5310 = w.create_rectangle(offset5310[0], offset5310[1],  offset5310[0]+width5310,
+                                  # offset5310[1]+height5310, fill="grey30")
+
+
 
     width5304 = increment*W_5304
     height5304  = increment*H_5304
-    offset5304 = (offset5302[0] + width5302 + WALL_WIDTH), offset5300[1] + height5300 +WALL_WIDTH
+    offset5304 = (offset5310[0] + width5310 + WALL_WIDTH), offset5310[1] + height5310-height5304 #+ WALL_WIDTH
 
+
+    width5302 = increment*W_5302
+    height5302  = increment*H_5302
+    offset5302 = offset5304[0] + width5304 + WALL_WIDTH, + offset5310[1]
+
+
+    offset5300 = offset5310[0], offset5310[1]+height5310 + WALL_WIDTH #+ height5300 + WALL_WIDTH
+
+    height5300 = increment*H_5300
     width5300 = increment*(2*width5302+width5304+4*WALL_WIDTH)
 
 
 
     corridor = w.create_rectangle(offset5300[0], offset5300[1],  offset5300[0]+width5300,
                                   offset5300[1]+height5300,fill='cornsilk2')
+
     wean5302 = w.create_rectangle(offset5302[0], offset5302[1],  offset5302[0]+width5302,
                                   offset5302[1]+height5302,fill='cornsilk2')
 
     wean5304 = w.create_rectangle(offset5304[0], offset5304[1],  offset5304[0]+width5304,
                                   offset5304[1]+height5304,fill='cornsilk2')
 
-    wean5310 = w.create_rectangle(offset5304[0]+WALL_WIDTH+width5304, offset5302[1],
-                                  WINDOW_WIDTH-60, offset5302[1]+height5302, fill="grey30")
+    # wean5310 = w.create_rectangle(offset5304[0]+WALL_WIDTH+width5304, offset5302[1],
+                                  # WINDOW_WIDTH-60, offset5302[1]+height5302, fill="grey30")
 
     wean5310_txt = w.create_text((offset5304[0]+WALL_WIDTH+width5304+WINDOW_WIDTH-50)/2, 
                                 (offset5302[1]*2 + height5302)/2, text="5310", font="Helvetica 20 italic")
@@ -588,7 +602,10 @@ def drawSpace(w):
                                               (offset5304[1]+(height5304)) , fill='cornsilk2',outline='black')
     wean5304_positions[3] = w.create_rectangle(offset5304[0]+width5304/2, offset5304[1]+(height5304)/2, (offset5304[0]+(width5304)),
                                               (offset5304[1]+(height5304)) , fill='cornsilk2',outline='black')
-
+    wean5310 = w.create_rectangle(offset5310[0], offset5310[1],  offset5310[0]+width5310,
+                                  offset5310[1]+height5310, fill="grey30")
+    wean5310_txt = w.create_text((offset5310[0]+width5310+50)/2, 
+                                (offset5310[1]+height5310)/2, text="5310", font="Helvetica 20 italic")
     legend_width = 220
     legend_height = 160
     legend_offset = 50
@@ -596,28 +613,28 @@ def drawSpace(w):
     legend_offset_w = 45
     margin = 10;
 
-    legend_box = w.create_rectangle(WINDOW_WIDTH-legend_width, WINDOW_HEIGHT-legend_height,
-                                    WINDOW_WIDTH-legend_offset, WINDOW_HEIGHT-50, fill='cornsilk2');
+    # legend_box = w.create_rectangle(WINDOW_WIDTH-legend_width, WINDOW_HEIGHT-legend_height,
+    #                                 WINDOW_WIDTH-legend_offset, WINDOW_HEIGHT-50, fill='cornsilk2');
 
-    user1_legend = w.create_rectangle(WINDOW_WIDTH-legend_width+margin, WINDOW_HEIGHT-legend_height+margin,
-                                      WINDOW_WIDTH-legend_width+legend_offset_w, 
-                                      WINDOW_HEIGHT-legend_height+legend_offset_h, fill='red');
+    # user1_legend = w.create_rectangle(WINDOW_WIDTH-legend_width+margin, WINDOW_HEIGHT-legend_height+margin,
+    #                                   WINDOW_WIDTH-legend_width+legend_offset_w, 
+    #                                   WINDOW_HEIGHT-legend_height+legend_offset_h, fill='red');
 
-    user1_txt = w.create_text(WINDOW_WIDTH-legend_height+margin,  WINDOW_HEIGHT-140, text="User 1")
+    # user1_txt = w.create_text(WINDOW_WIDTH-legend_height+margin,  WINDOW_HEIGHT-140, text="User 1")
     
-    user2_legend = w.create_rectangle(WINDOW_WIDTH-legend_width+margin,
-                                      WINDOW_HEIGHT-legend_height+margin+legend_offset_h,
-                                      WINDOW_WIDTH-legend_width+legend_offset_w, 
-                                      WINDOW_HEIGHT-legend_height+2*legend_offset_h, fill='blue');
+    # user2_legend = w.create_rectangle(WINDOW_WIDTH-legend_width+margin,
+    #                                   WINDOW_HEIGHT-legend_height+margin+legend_offset_h,
+    #                                   WINDOW_WIDTH-legend_width+legend_offset_w, 
+    #                                   WINDOW_HEIGHT-legend_height+2*legend_offset_h, fill='blue');
     
-    user2_txt = w.create_text(WINDOW_WIDTH-legend_height+margin,  WINDOW_HEIGHT-110, text="User 2")
+    # user2_txt = w.create_text(WINDOW_WIDTH-legend_height+margin,  WINDOW_HEIGHT-110, text="User 2")
 
-    both_legend = w.create_rectangle(WINDOW_WIDTH-legend_width+margin,
-                                    WINDOW_HEIGHT-legend_height+margin+2*legend_offset_h,
-                                    WINDOW_WIDTH-legend_width+legend_offset_w,
-                                    WINDOW_HEIGHT-legend_height+3*legend_offset_h, fill='DarkOrchid4');
+    # both_legend = w.create_rectangle(WINDOW_WIDTH-legend_width+margin,
+    #                                 WINDOW_HEIGHT-legend_height+margin+2*legend_offset_h,
+    #                                 WINDOW_WIDTH-legend_width+legend_offset_w,
+    #                                 WINDOW_HEIGHT-legend_height+3*legend_offset_h, fill='DarkOrchid4');
 
-    user2_txt = w.create_text(WINDOW_WIDTH-legend_height+margin,  WINDOW_HEIGHT-80, text="Both")
+    # user2_txt = w.create_text(WINDOW_WIDTH-legend_height+margin,  WINDOW_HEIGHT-80, text="Both")
 
     positions = wean5300_positions + wean5302_positions + wean5304_positions;
 
