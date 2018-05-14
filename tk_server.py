@@ -201,6 +201,17 @@ class User():
 # reactor.run()
 
 
+
+def color_blend_2(c1,c2):
+    r = (c1.red+c2.red)/2;
+    g = (c1.green+c2.green)/2;
+    b = (c1.blue+c2.blue)/2;
+    print r
+    print g
+    print b
+
+    return Color((r, g, b))
+
 def color_blend(user_colors, c1_index, c2_index):
     c1 = user_colors[0][c1_index];
     c2 = user_colors[1][c2_index];
@@ -217,7 +228,7 @@ def color_blend(user_colors, c1_index, c2_index):
     return Color((r, g, b))
 
 
-def drawSpace(w, user_colors):
+def drawSpace(w, user_colors, blend_color_list):
     global positions
     increment = 1 #WINDOW_HEIGHT/700
     offset5300 = WINDOW_WIDTH/8, WINDOW_HEIGHT/8
@@ -240,34 +251,38 @@ def drawSpace(w, user_colors):
 
     c1_index = 0
     c2_index = 0
-    new_color = color_blend(user_colors, c2_index, c1_index);
+    new_color = color_blend_2(user_colors[0][c1_index],user_colors[1][c2_index]);
 
     wean5300_positions[0] = w.create_rectangle(offset5300[0], offset5300[1], (offset5300[0]+(width5300/3)),
-                                              (offset5300[1]+(height5300)) ,fill=str(new_color.hex), outline='black')
+                                              (offset5300[1]+(height5300)) ,fill=str(user_colors[1][0].hex), outline='black')
 
+    c1_index = 1
     c2_index = 1
-    new_color = color_blend(user_colors, c2_index, c1_index);
+    new_color = color_blend_2(user_colors[0][c1_index],user_colors[1][c2_index]);
 
     wean5300_positions[1] = w.create_rectangle((offset5300[0]+width5300/3), offset5300[1],  (offset5300[0]+(2*width5300/3)),
-                                              (offset5300[1]+(height5300)) ,fill=str(new_color.hex), outline='black')
+                                              (offset5300[1]+(height5300)) ,fill=str(user_colors[1][1].hex), outline='black')
 
+    c1_index = 2
     c2_index = 2
-    new_color = color_blend(user_colors, c2_index, c1_index);
+    new_color = color_blend_2(user_colors[0][c1_index],user_colors[1][c2_index]);
 
     wean5300_positions[2] = w.create_rectangle((offset5300[0]+2*width5300/3), offset5300[1],  (offset5300[0]+(width5300)),
-                                              (offset5300[1]+(height5300)) ,fill=str(new_color.hex),outline='black')
+                                              (offset5300[1]+(height5300)) ,fill=str(user_colors[1][2].hex),outline='black')
 
+    c1_index = 3
     c2_index = 3
-    new_color = color_blend(user_colors, c2_index, c1_index);
+    new_color = color_blend_2(user_colors[0][c1_index],user_colors[1][c2_index]);
 
     wean5302_positions[0] = w.create_rectangle(offset5302[0], offset5302[1],  (offset5302[0]+(width5302)/2),
-                                              (offset5302[1]+(height5302)/2) ,fill=str(new_color.hex), outline='black')
+                                              (offset5302[1]+(height5302)/2) ,fill=str(user_colors[1][3].hex), outline='black')
 
+    c1_index = 4
     c2_index = 4
-    new_color = color_blend(user_colors, c2_index, c1_index);
+    new_color = color_blend_2(user_colors[0][c1_index],user_colors[1][c2_index]);
 
     wean5302_positions[1] = w.create_rectangle((offset5302[0]+width5302/2), offset5302[1],  (offset5302[0]+(width5302)),
-                                              (offset5302[1]+(height5302)/2) ,fill=str(new_color.hex),outline='black')
+                                              (offset5302[1]+(height5302)/2) ,fill=str(user_colors[1][4].hex),outline='black')
     wean5302_positions[2] = w.create_rectangle(offset5302[0], (offset5302[1]+(height5302)/2), (offset5302[0]+(width5302)/2),
                                               (offset5302[1]+(height5302)) , fill='cornsilk2',outline='black')
     wean5302_positions[3] = w.create_rectangle(offset5302[0]+width5302/2, offset5302[1]+(height5302)/2, (offset5302[0]+(width5302)),
@@ -330,9 +345,15 @@ def trackPerson(root):
     w = Canvas(root, width=WINDOW_WIDTH, height=WINDOW_HEIGHT,background='SkyBlue4')
     w.pack()
     user_colors = [ [Color(hex='#ff2a1a'),Color(hex='#f66340'),Color(hex='#f09063'),Color(hex='#edb284'),Color(hex='#eccba2')],
-                  [Color(hex='#103ffb'),Color(hex='#38baf3'),Color(hex='#5dedd1'),Color(hex='#7feba0'),Color(hex='#aeea9f')] ]
+                                 [Color(hex='#021e97'), Color(hex='#032bc9'),Color(hex='#0435fb'),Color(hex='#365efc'),Color(hex='#6886fd')]]
+    user_colors = [user_colors[0][::-1], user_colors[1][::-1]]
+    blend_color_list = [Color((236, 198, 236)), Color((210, 121, 210)), Color((153, 51, 153)), Color((128, 0, 128)), Color((102, 0, 102))]
 
-    drawSpace(w, user_colors);
+    # for i in xrange(len(user_colors[0])):
+    #     blend_color_list.append(color_blend_2(user_colors[0][i], user_colors[1][i]));
+
+    # print blend_color_list                   
+    drawSpace(w, user_colors, blend_color_list);
 
     blacklist_dict = create_blacklist();
     clf_node_off_all = [clf_n0_off_all, clf_n1_off_all, clf_n2_off_all, clf_n3_off_all,
